@@ -72,6 +72,10 @@
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
@@ -94,6 +98,26 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <!--rbkmoney libs-->
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>damsel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>machinegun-proto</artifactId>
+            <version>1.19-f77367a</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>sink-common-lib</artifactId>
+            <version>0.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney.geck</groupId>
+            <artifactId>filter</artifactId>
         </dependency>
 
         <!--test-->
