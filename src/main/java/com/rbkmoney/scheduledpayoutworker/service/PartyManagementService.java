@@ -1,13 +1,13 @@
 package com.rbkmoney.scheduledpayoutworker.service;
 
-import com.rbkmoney.damsel.domain.*;
-import com.rbkmoney.damsel.msgpack.Value;
+import com.rbkmoney.damsel.domain.Contract;
+import com.rbkmoney.damsel.domain.Party;
+import com.rbkmoney.damsel.domain.PaymentInstitutionRef;
+import com.rbkmoney.damsel.domain.Shop;
 import com.rbkmoney.damsel.payment_processing.PartyRevisionParam;
-import com.rbkmoney.damsel.payment_processing.PayoutParams;
 import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 
 import java.time.Instant;
-import java.util.List;
 
 public interface PartyManagementService {
 
@@ -45,14 +45,6 @@ public interface PartyManagementService {
             throws NotFoundException;
 
     PaymentInstitutionRef getPaymentInstitutionRef(String partyId, String contractId, PartyRevisionParam revisionParam)
-            throws NotFoundException;
-
-    Value getMetaData(String partyId, String namespace) throws NotFoundException;
-
-    List<FinalCashFlowPosting> computePayoutCashFlow(String partyId, String shopId, String payoutToolId,
-                                                     Cash amount, Instant timestamp) throws NotFoundException;
-
-    List<FinalCashFlowPosting> computePayoutCashFlow(String partyId, PayoutParams payoutParams)
             throws NotFoundException;
 
     long getPartyRevision(String partyId) throws NotFoundException;

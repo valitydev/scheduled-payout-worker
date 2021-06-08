@@ -1,6 +1,9 @@
 package com.rbkmoney.scheduledpayoutworker.service.impl;
 
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.Contract;
+import com.rbkmoney.damsel.domain.Party;
+import com.rbkmoney.damsel.domain.PaymentInstitutionRef;
+import com.rbkmoney.damsel.domain.Shop;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
@@ -13,7 +16,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
 
 import static com.rbkmoney.scheduledpayoutworker.constant.CacheConstant.PARTIES;
 
@@ -169,51 +171,6 @@ public class PartyManagementServiceImpl implements PartyManagementService {
         log.info("PaymentInstitutionRef has been found, partyId='{}', contractId='{}', paymentInstitutionRef='{}', " +
                 "partyRevisionParam='{}'", partyId, contractId, paymentInstitutionRef, revisionParam);
         return paymentInstitutionRef;
-    }
-
-    @Override
-    public com.rbkmoney.damsel.msgpack.Value getMetaData(String partyId, String namespace) throws NotFoundException {
-        try {
-            return partyManagementClient.getMetaData(userInfo, partyId, namespace);
-        } catch (PartyMetaNamespaceNotFound ex) {
-            return null;
-        } catch (PartyNotFound ex) {
-            throw new NotFoundException(
-                    String.format("Party not found, partyId='%s', namespace='%s'", partyId, namespace),
-                    ex
-            );
-        } catch (TException ex) {
-            throw new RuntimeException(
-                    String.format("Failed to get namespace, partyId='%s', namespace='%s'", partyId, namespace), ex
-            );
-        }
-    }
-
-    @Override
-    public List<FinalCashFlowPosting> computePayoutCashFlow(String partyId, String shopId, String payoutToolId,
-                                                            Cash amount, Instant timestamp) throws NotFoundException {
-        PayoutParams payoutParams = new PayoutParams(shopId, amount, TypeUtil.temporalToString(timestamp));
-        payoutParams.setPayoutToolId(payoutToolId);
-
-        return computePayoutCashFlow(partyId, payoutParams);
-    }
-
-    @Override
-    public List<FinalCashFlowPosting> computePayoutCashFlow(String partyId, PayoutParams payoutParams)
-            throws NotFoundException {
-        log.debug("Trying to compute payout cash flow, partyId='{}', payoutParams='{}'", partyId, payoutParams);
-        try {
-            var finalCashFlowPostings = partyManagementClient.computePayoutCashFlow(userInfo, partyId, payoutParams);
-            log.info("Payout cash flow has been computed, partyId='{}', payoutParams='{}', postings='{}'",
-                    partyId, payoutParams, finalCashFlowPostings);
-            return finalCashFlowPostings;
-        } catch (PartyNotFound | PartyNotExistsYet | ShopNotFound | PayoutToolNotFound ex) {
-            throw new NotFoundException(String.format("%s, partyId='%s', payoutParams='%s'",
-                    ex.getClass().getSimpleName(), partyId, payoutParams), ex);
-        } catch (TException ex) {
-            throw new RuntimeException(String.format("Failed to compute payout cash flow, partyId='%s', " +
-                    "payoutParams='%s'", partyId, payoutParams), ex);
-        }
     }
 
     @Override
