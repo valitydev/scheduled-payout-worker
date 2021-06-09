@@ -3,7 +3,7 @@ package com.rbkmoney.scheduledpayoutworker.dao;
 import com.rbkmoney.payouter.domain.tables.pojos.Adjustment;
 import com.rbkmoney.scheduledpayoutworker.AbstractIntegrationTest;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;

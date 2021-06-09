@@ -8,9 +8,9 @@ import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
 import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -19,6 +19,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
 public class InvoicingListenerTest {
@@ -34,13 +35,13 @@ public class InvoicingListenerTest {
 
     private AutoCloseable mocks;
 
-    @Before
+    @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
         listener = new InvoicingKafkaListener(paymentProcessingEventService, parser);
     }
 
-    @After
+    @AfterEach
     public void clean() throws Exception {
         mocks.close();
     }
@@ -64,7 +65,7 @@ public class InvoicingListenerTest {
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void listenEmptyException() {
         MachineEvent message = new MachineEvent();
 
@@ -73,7 +74,7 @@ public class InvoicingListenerTest {
 
         Mockito.when(parser.parse(message)).thenThrow(new RuntimeException());
 
-        listener.handle(sinkEvent, ack);
+        assertThrows(RuntimeException.class, () -> listener.handle(sinkEvent, ack));
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }

@@ -11,8 +11,6 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -20,8 +18,9 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.LocalDateTime;
@@ -31,11 +30,11 @@ import java.util.Properties;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ContextConfiguration(classes = ScheduledPayoutWorkerApplication.class,
         initializers = AbstractKafkaTest.Initializer.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@Testcontainers
 public abstract class AbstractKafkaTest extends AbstractIntegrationTest {
 
     @Value("${kafka.bootstrap-servers}")
@@ -46,7 +45,7 @@ public abstract class AbstractKafkaTest extends AbstractIntegrationTest {
     private static final String CONFLUENT_IMAGE_NAME = "confluentinc/cp-kafka";
     private static final String CONFLUENT_PLATFORM_VERSION = "latest";
 
-    @ClassRule
+    @Container
     public static KafkaContainer kafka = new KafkaContainer(DockerImageName
             .parse(CONFLUENT_IMAGE_NAME)
             .withTag(CONFLUENT_PLATFORM_VERSION))
