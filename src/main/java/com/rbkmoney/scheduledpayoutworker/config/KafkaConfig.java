@@ -1,14 +1,8 @@
 package com.rbkmoney.scheduledpayoutworker.config;
 
-import com.rbkmoney.damsel.payment_processing.EventPayload;
-import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.config.properties.KafkaSslProperties;
-import com.rbkmoney.scheduledpayoutworker.serde.MachineEventDeserializer;
-import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
-import com.rbkmoney.sink.common.parser.impl.PaymentEventPayloadMachineEventParser;
-import com.rbkmoney.sink.common.serialization.BinaryDeserializer;
-import com.rbkmoney.sink.common.serialization.impl.PaymentEventPayloadDeserializer;
+import com.rbkmoney.scheduledpayoutworker.serde.impl.MachineEventDeserializer;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
@@ -114,17 +108,6 @@ public class KafkaConfig {
         ErrorHandler errorHandler = new SeekToCurrentErrorHandler(new FixedBackOff(0L, Long.MAX_VALUE - 1));
         errorHandler.setAckAfterHandle(false);
         return errorHandler;
-    }
-
-    @Bean
-    public BinaryDeserializer<EventPayload> paymentEventPayloadDeserializer() {
-        return new PaymentEventPayloadDeserializer();
-    }
-
-    @Bean
-    public MachineEventParser<EventPayload> paymentEventPayloadMachineEventParser(
-            BinaryDeserializer<EventPayload> paymentEventPayloadDeserializer) {
-        return new PaymentEventPayloadMachineEventParser(paymentEventPayloadDeserializer);
     }
 
 }

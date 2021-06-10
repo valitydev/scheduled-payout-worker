@@ -5,9 +5,9 @@ import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
+import com.rbkmoney.scheduledpayoutworker.converter.SourceEventParser;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
-import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ public class InvoicingListenerTest {
     @Mock
     private PaymentProcessingEventService paymentProcessingEventService;
     @Mock
-    private MachineEventParser<EventPayload> parser;
+    private SourceEventParser parser;
     @Mock
     private Acknowledgment ack;
 
@@ -54,12 +54,12 @@ public class InvoicingListenerTest {
         EventPayload payload = new EventPayload();
         payload.setCustomerChanges(List.of());
         event.setPayload(payload);
-        Mockito.when(parser.parse(message)).thenReturn(payload);
+        Mockito.when(parser.parseEvent(message)).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        listener.handle(sinkEvent, ack);
+        listener.handle(sinkEvent.getEvent(), ack);
 
         Mockito.verify(paymentProcessingEventService, Mockito.times(0)).processEvent(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
@@ -72,9 +72,9 @@ public class InvoicingListenerTest {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        Mockito.when(parser.parse(message)).thenThrow(new RuntimeException());
+        Mockito.when(parser.parseEvent(message)).thenThrow(new RuntimeException());
 
-        assertThrows(RuntimeException.class, () -> listener.handle(sinkEvent, ack));
+        assertThrows(RuntimeException.class, () -> listener.handle(sinkEvent.getEvent(), ack));
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }
@@ -88,12 +88,12 @@ public class InvoicingListenerTest {
         payload.setInvoiceChanges(invoiceChanges);
         event.setPayload(payload);
         MachineEvent message = new MachineEvent();
-        Mockito.when(parser.parse(message)).thenReturn(payload);
+        Mockito.when(parser.parseEvent(message)).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        listener.handle(sinkEvent, ack);
+        listener.handle(sinkEvent.getEvent(), ack);
 
         Mockito.verify(paymentProcessingEventService, Mockito.times(1)).processEvent(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();

@@ -1,6 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.exception;
 
 public class DaoException extends RuntimeException {
+    
     public DaoException() {
         super();
     }

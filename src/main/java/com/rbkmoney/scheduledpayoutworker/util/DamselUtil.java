@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 
 public class DamselUtil {
 
-    private static final JsonProcessor JSON_PROCESSOR = new JsonProcessor();
-
     public static Long computeMerchantAmount(List<FinalCashFlowPosting> finalCashFlow) {
         long amountSource = computeAmount(finalCashFlow, FinalCashFlowPosting::getSource);
         long amountDest = computeAmount(finalCashFlow, FinalCashFlowPosting::getDestination);
@@ -42,10 +40,6 @@ public class DamselUtil {
         return finalCashFlow.stream().collect(
                 Collectors.groupingBy(CashFlowType::getCashFlowType,
                         Collectors.summingLong(cashFlow -> cashFlow.getVolume().getAmount())));
-    }
-
-    public static <T extends TBase> T jsonToTBase(JsonNode jsonNode, Class<T> type) throws IOException {
-        return JSON_PROCESSOR.process(jsonNode, new TBaseHandler<>(type));
     }
 
 }
