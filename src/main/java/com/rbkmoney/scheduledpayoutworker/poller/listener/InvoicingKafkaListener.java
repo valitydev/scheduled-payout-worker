@@ -15,7 +15,7 @@ import org.springframework.kafka.support.Acknowledgment;
 public class InvoicingKafkaListener {
 
     private final PaymentProcessingEventService paymentProcessingEventService;
-    private final SourceEventParser parser;
+    private final SourceEventParser<EventPayload> parser;
 
     @KafkaListener(topics = "${kafka.topics.invoice.id}", containerFactory = "invContainerFactory")
     public void handle(MachineEvent event, Acknowledgment ack) {

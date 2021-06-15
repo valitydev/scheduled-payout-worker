@@ -1,6 +1,5 @@
 package com.rbkmoney.scheduledpayoutworker.converter;
 
-import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.exception.ParseException;
 import lombok.RequiredArgsConstructor;
@@ -10,14 +9,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SourceEventParser {
+public class SourceEventParser<T> {
 
-    private final BinaryConverter<EventPayload> converter;
+    private final BinaryConverter<T> converter;
+    private final Class<T> clazz;
 
-    public EventPayload parseEvent(MachineEvent message) {
+    public T parseEvent(MachineEvent message) {
         try {
             byte[] bin = message.getData().getBin();
-            return converter.convert(bin, EventPayload.class);
+            return converter.convert(bin, clazz);
         } catch (Exception e) {
             log.error("Exception when parse message e: ", e);
             throw new ParseException();

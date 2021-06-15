@@ -127,6 +127,15 @@
             <groupId>com.rbkmoney.geck</groupId>
             <artifactId>filter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>kafka-common-lib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>schedulator-proto</artifactId>
+            <version>1.15-c98f483</version>
+        </dependency>
 
         <!--test-->
         <dependency>
