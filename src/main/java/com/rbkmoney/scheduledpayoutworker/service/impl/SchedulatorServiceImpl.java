@@ -20,6 +20,8 @@ import org.apache.thrift.TException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import static com.rbkmoney.scheduledpayoutworker.util.GenerateUtil.generatePayoutScheduleId;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -50,25 +52,23 @@ public class SchedulatorServiceImpl implements SchedulatorService {
         }
 
         CalendarRef calendarRef = paymentInstitution.getCalendar();
-        long revision = partyManagementService.getPartyRevision(partyId);
         shopMetaDao.save(partyId, shopId, calendarRef.getId(), scheduleRef.getId());
         //deregister old schedule
         Schedule schedule = new Schedule();
         DominantBasedSchedule dominantBasedSchedule = new DominantBasedSchedule()
                 .setBusinessScheduleRef(new BusinessScheduleRef().setId(scheduleRef.getId()))
                 .setCalendarRef(calendarRef);
-                //.setRevision(revision); //TODO: Убрать
         schedule.setDominantSchedule(dominantBasedSchedule);
         RegisterJobRequest registerJobRequest = new RegisterJobRequest()
                 .setSchedule(schedule)
                 .setExecutorServicePath(callbackPath)
                 .setContext(new byte[0]);
-        //TODO: Откуда брать scheduleId / нужно ли вызывать deregister, если запись в БД уже есть?
+        String scheduleId = generatePayoutScheduleId(scheduleRef.getId());
         try {
-            schedulatorClient.registerJob(payouter-String.valueOf(scheduleRef.getId()), registerJobRequest);
+            schedulatorClient.registerJob(scheduleId, registerJobRequest);
         } catch (TException e) {
             //TODO: Обработка ScheduleAlreadyExists (вероятно на уровне вставки в shopMetaDao)
-            throw new IllegalStateException(String.format("Register job '%s' failed", scheduleRef.getId()), e);
+            throw new IllegalStateException(String.format("Register job '%s' failed", scheduleId), e);
         }
 
         log.info("Create job request have been successfully sent, " +
