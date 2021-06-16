@@ -17,7 +17,6 @@ import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
-import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.CashFlowType;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
@@ -70,8 +69,8 @@ public class InvoicePaymentHandler implements PaymentProcessingHandler {
 
         Invoice invoice = invoiceDao.get(invoiceId);
         if (invoice == null) {
-            throw new NotFoundException(String.format("Invoice on payment not found, invoiceId='%s', paymentId='%s'",
-                    invoiceId, invoicePayment.getId()));
+            log.warn("Invoice on payment not found, invoiceId='{}', paymentId='{}'", invoiceId, invoicePayment.getId());
+            return;
         }
 
         payment.setPartyId(invoice.getPartyId());

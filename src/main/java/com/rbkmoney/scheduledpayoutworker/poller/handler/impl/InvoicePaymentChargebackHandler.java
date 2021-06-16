@@ -72,10 +72,6 @@ public class InvoicePaymentChargebackHandler implements PaymentProcessingHandler
         chargeback.setChargebackId(invoicePaymentChargeback.getId());
         chargeback.setStatus(ChargebackStatus.PENDING);
         chargeback.setCreatedAt(TypeUtil.stringToLocalDateTime(invoicePaymentChargeback.getCreatedAt()));
-        chargeback.setReason(invoicePaymentChargeback.getReason().getCode());
-        chargeback.setReasonCategory(
-                TBaseUtil.unionFieldToEnum(invoicePaymentChargeback.getReason().getCategory(), ChargebackCategory.class)
-        );
         if (invoicePaymentChargeback.isSetBody()) {
             Cash chargebackCash = invoicePaymentChargeback.getBody();
             chargeback.setAmount(chargebackCash.getAmount());
@@ -86,8 +82,6 @@ public class InvoicePaymentChargebackHandler implements PaymentProcessingHandler
         }
         chargeback.setLevyAmount(invoicePaymentChargeback.getLevy().getAmount());
         chargeback.setLevyCurrencyCode(invoicePaymentChargeback.getLevy().getCurrency().getSymbolicCode());
-        chargeback.setDomainRevision(invoicePaymentChargeback.getDomainRevision());
-        chargeback.setPartyRevision(invoicePaymentChargeback.getPartyRevision());
         chargeback.setChargebackStage(
                 TBaseUtil.unionFieldToEnum(invoicePaymentChargeback.getStage(), ChargebackStage.class)
         );

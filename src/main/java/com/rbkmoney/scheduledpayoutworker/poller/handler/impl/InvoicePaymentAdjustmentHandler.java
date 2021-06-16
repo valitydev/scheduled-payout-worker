@@ -76,8 +76,6 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
         adjustment.setAdjustmentId(invoicePaymentAdjustment.getId());
         adjustment.setStatus(AdjustmentStatus.PENDING);
         adjustment.setCreatedAt(TypeUtil.stringToLocalDateTime(invoicePaymentAdjustment.getCreatedAt()));
-        adjustment.setDomainRevision(invoicePaymentAdjustment.getDomainRevision());
-        adjustment.setReason(invoicePaymentAdjustment.getReason());
 
         Long oldAmount = DamselUtil.computeMerchantAmount(invoicePaymentAdjustment.getOldCashFlowInverse());
         Long newAmount = DamselUtil.computeMerchantAmount(invoicePaymentAdjustment.getNewCashFlow());
