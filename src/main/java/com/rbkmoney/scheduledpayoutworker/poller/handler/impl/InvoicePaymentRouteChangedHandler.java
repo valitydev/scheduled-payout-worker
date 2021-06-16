@@ -41,8 +41,8 @@ public class InvoicePaymentRouteChangedHandler implements PaymentProcessingHandl
         String paymentId = invoicePaymentChange.getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            throw new NotFoundException(String.format("Invoice payment not found, invoiceId='%s', paymentId='%s'",
-                    invoiceId, paymentId));
+            log.warn("Invoice on payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
+            return;
         }
 
         PaymentRoute paymentRoute = invoicePaymentChange.getPayload().getInvoicePaymentRouteChanged().getRoute();

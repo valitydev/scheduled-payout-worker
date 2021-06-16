@@ -1,9 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 
-import com.rbkmoney.damsel.domain.Invoice;
-import com.rbkmoney.damsel.domain.Shop;
+import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
-import com.rbkmoney.damsel.payment_processing.PartyRevisionParam;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -18,6 +16,8 @@ import com.rbkmoney.scheduledpayoutworker.service.PartyManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -47,6 +47,26 @@ public class InvoiceHandler implements PaymentProcessingHandler {
 
         Shop shop = partyManagementService.getShop(invoice.getOwnerId(), invoice.getShopId());
 
+        Party party = partyManagementService.getParty(invoice.getOwnerId());
+
+        Optional<Contract> contractOptional = party.getContracts().values().stream()
+                .filter(contract -> isRelatedToShop(contract, shop))
+                .findFirst();
+
+        if (contractOptional.isEmpty()) {
+            return;
+        }
+
+        Optional<PayoutTool> payoutToolOptional = contractOptional.get().getPayoutTools().stream()
+                .filter(
+                        payoutTool -> payoutTool.getPayoutToolInfo().isSetPaymentInstitutionAccount()
+                )
+                .findFirst();
+
+        if (payoutToolOptional.isEmpty()) {
+            return;
+        }
+
         invoiceDao.save(
                 invoice.getId(),
                 invoice.getOwnerId(),
@@ -62,5 +82,11 @@ public class InvoiceHandler implements PaymentProcessingHandler {
     @Override
     public Filter<InvoiceChange> getFilter() {
         return filter;
+    }
+
+    private boolean isRelatedToShop(Contract contract, Shop shop) {
+        return contract.getPayoutTools().stream()
+                .anyMatch(payoutToolValue -> payoutToolValue.getId().equals(shop.getPayoutToolId())
+                        && contract.getId().equals(shop.getContractId()));
     }
 }

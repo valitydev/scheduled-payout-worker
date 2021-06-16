@@ -46,9 +46,9 @@ public class InvoicePaymentChargebackLevyChangedHandler implements PaymentProces
 
         Chargeback chargeback = chargebackDao.get(invoiceId, paymentId, chargebackId);
         if (chargeback == null) {
-            throw new NotFoundException(
-                    String.format("Invoice chargeback not found, invoiceId='%s', paymentId='%s' chargebackId='%s'",
-                            invoiceId, paymentId, chargebackId));
+            log.warn("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+                    invoiceId, paymentId, chargebackId);
+            return;
         }
 
         Cash levy = invoicePaymentChargebackLevyChanged.getLevy();

@@ -34,13 +34,12 @@ public class InvoicePaymentCaptureStartedHandler implements PaymentProcessingHan
 
     @Override
     public void handle(InvoiceChange invoiceChange, MachineEvent event) {
-        long eventId = event.getEventId();
         String invoiceId = event.getSourceId();
         String paymentId = invoiceChange.getInvoicePaymentChange().getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            throw new NotFoundException(String.format("Invoice payment not found, invoiceId='%s', paymentId='%s'",
-                    invoiceId, paymentId));
+            log.warn("Invoice payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
+            return;
         }
         InvoicePaymentCaptureStarted invoicePaymentCaptureStarted = invoiceChange.getInvoicePaymentChange()
                 .getPayload()

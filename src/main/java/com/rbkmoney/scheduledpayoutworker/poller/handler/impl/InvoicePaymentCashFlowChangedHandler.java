@@ -44,8 +44,8 @@ public class InvoicePaymentCashFlowChangedHandler implements PaymentProcessingHa
         String paymentId = invoicePaymentChange.getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            throw new NotFoundException(String.format("Invoice payment not found, invoiceId='%s', paymentId='%s'",
-                    invoiceId, paymentId));
+            log.warn("Invoice payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
+            return;
         }
 
         var finalCashFlow = invoicePaymentChange.getPayload().getInvoicePaymentCashFlowChanged().getCashFlow();

@@ -46,9 +46,9 @@ public class InvoicePaymentChargebackCashFlowChangedHandler implements PaymentPr
 
         Chargeback chargeback = chargebackDao.get(invoiceId, paymentId, chargebackId);
         if (chargeback == null) {
-            throw new NotFoundException(
-                    String.format("Invoice chargeback not found, invoiceId='%s', paymentId='%s' chargebackId='%s'",
-                            invoiceId, paymentId, chargebackId));
+            log.warn("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+                    invoiceId, paymentId, chargebackId);
+            return;
         }
 
         long merchantAmount = DamselUtil.computeMerchantAmount(invoicePaymentChargebackCashFlowChanged.getCashFlow());

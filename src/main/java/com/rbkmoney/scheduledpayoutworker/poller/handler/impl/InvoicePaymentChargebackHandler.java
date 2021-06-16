@@ -58,9 +58,9 @@ public class InvoicePaymentChargebackHandler implements PaymentProcessingHandler
         Payment payment = paymentDao.get(invoiceId, paymentId);
 
         if (payment == null) {
-            throw new NotFoundException(
-                    String.format("Payment on chargeback not found, invoiceId='%s', paymentId='%s', chargebackId='%s'",
-                            invoiceId, paymentId, invoicePaymentChargeback.getId()));
+            log.warn("Payment on chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+                    invoiceId, paymentId, invoicePaymentChargeback.getId());
+            return;
         }
 
         Chargeback chargeback = new Chargeback();
