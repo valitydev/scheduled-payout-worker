@@ -1,6 +1,5 @@
 package com.rbkmoney.scheduledpayoutworker.dao;
 
-import com.rbkmoney.payouter.domain.enums.ChargebackCategory;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.scheduledpayoutworker.AbstractIntegrationTest;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
@@ -32,7 +31,6 @@ public class ChargebackDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSaveOnlyNonNullValues() throws DaoException {
         Chargeback chargeback = random(Chargeback.class, "reason", "payoutId");
-        chargeback.setReasonCategory(ChargebackCategory.fraud);
         chargebackDao.save(chargeback);
         assertEquals(
                 chargeback,
