@@ -17,6 +17,7 @@ import com.rbkmoney.scheduledpayoutworker.service.SchedulatorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -31,10 +32,14 @@ public class SchedulatorServiceImpl implements SchedulatorService {
 
     private final SchedulatorSrv.Iface schedulatorClient;
 
+    @Value("${service.schedulator.callback-path}")
+    private String callbackPath;
+
     @Override
     public void registerJob(String partyId, String shopId, BusinessScheduleRef scheduleRef) {
         //TODO: Проверить обязательные поля thrift'а на наличие
-        //log.info();
+        log.info("Trying to send create job request, partyId='{}', shopId='{}', scheduleRef='{}'",
+                partyId, shopId, scheduleRef);
 
         Shop shop = partyManagementService.getShop(partyId, shopId);
         var paymentInstitutionRef = partyManagementService.getPaymentInstitutionRef(partyId, shop.getContractId());
@@ -56,15 +61,19 @@ public class SchedulatorServiceImpl implements SchedulatorService {
         schedule.setDominantSchedule(dominantBasedSchedule);
         RegisterJobRequest registerJobRequest = new RegisterJobRequest()
                 .setSchedule(schedule)
-                //TODO: Подсмотрел в clickhouse-notificator такое заполнение, уточнить в необходимости.
+                .setExecutorServicePath(callbackPath)
                 .setContext(new byte[0]);
-        //TODO: Откуда брать scheduleId
+        //TODO: Откуда брать scheduleId / нужно ли вызывать deregister, если запись в БД уже есть?
         try {
             schedulatorClient.registerJob(String.valueOf(scheduleRef.getId()), registerJobRequest);
         } catch (TException e) {
             //TODO: Обработка ScheduleAlreadyExists (вероятно на уровне вставки в shopMetaDao)
             throw new IllegalStateException(String.format("Register job '%s' failed", scheduleRef.getId()), e);
         }
+
+        log.info("Create job request have been successfully sent, " +
+                        "partyId='{}', shopId='{}', calendarRef='{}', scheduleRef='{}'",
+                partyId, shopId, calendarRef, scheduleRef);
     }
 
     @Override

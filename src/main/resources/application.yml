@@ -51,6 +51,13 @@ service:
   partyManagement:
     url: http://hellgate:8022/v1/processing/partymgmt
     networkTimeout: 5000
+  dominant:
+    url: http://dominant:8022/v1/domain/repository_client
+    networkTimeout: 5000
+  schedulator:
+    url: http://schedulator:8022/v1/schedulator
+    networkTimeout: 5000
+    callback-path: http://localhost:8022/v1/schedulator
 kafka:
   bootstrap-servers: kafka1.bst1.rbkmoney.net:9092
   client-id: scheduled-payout-worker
@@ -62,6 +69,10 @@ kafka:
   topics:
     invoice:
       id: mg-invoice-100-2
+      enabled: false
+      concurrency: 1
+    party-management:
+      id: mg-events-party
       enabled: false
       concurrency: 1
   ssl:

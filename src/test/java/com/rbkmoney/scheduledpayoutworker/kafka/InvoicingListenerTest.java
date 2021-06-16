@@ -5,7 +5,8 @@ import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
-import com.rbkmoney.scheduledpayoutworker.converter.SourceEventParser;
+import com.rbkmoney.machinegun.msgpack.Value;
+import com.rbkmoney.scheduledpayoutworker.converter.impl.EventPayloadConverter;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +28,7 @@ public class InvoicingListenerTest {
     @Mock
     private PaymentProcessingEventService paymentProcessingEventService;
     @Mock
-    private SourceEventParser parser;
+    private EventPayloadConverter parser;
     @Mock
     private Acknowledgment ack;
 
@@ -50,11 +51,13 @@ public class InvoicingListenerTest {
     public void listenNonInvoiceChanges() {
 
         MachineEvent message = new MachineEvent();
+        message.setData(new Value());
+        message.getData().setBin(new byte[0]);
         Event event = new Event();
         EventPayload payload = new EventPayload();
         payload.setCustomerChanges(List.of());
         event.setPayload(payload);
-        Mockito.when(parser.parseEvent(message)).thenReturn(payload);
+        Mockito.when(parser.convert(message.getData().getBin())).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
@@ -68,11 +71,13 @@ public class InvoicingListenerTest {
     @Test
     public void listenEmptyException() {
         MachineEvent message = new MachineEvent();
+        message.setData(new Value());
+        message.getData().setBin(new byte[0]);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        Mockito.when(parser.parseEvent(message)).thenThrow(new RuntimeException());
+        Mockito.when(parser.convert(message.getData().getBin())).thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> listener.handle(sinkEvent.getEvent(), ack));
 
@@ -88,7 +93,10 @@ public class InvoicingListenerTest {
         payload.setInvoiceChanges(invoiceChanges);
         event.setPayload(payload);
         MachineEvent message = new MachineEvent();
-        Mockito.when(parser.parseEvent(message)).thenReturn(payload);
+        message.setData(new Value());
+        message.getData().setBin(new byte[0]);
+
+        Mockito.when(parser.convert(message.getData().getBin())).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);

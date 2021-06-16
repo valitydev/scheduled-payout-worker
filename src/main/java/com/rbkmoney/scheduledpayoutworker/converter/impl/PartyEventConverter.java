@@ -1,6 +1,7 @@
-package com.rbkmoney.scheduledpayoutworker.converter;
+package com.rbkmoney.scheduledpayoutworker.converter.impl;
 
-import com.rbkmoney.damsel.payment_processing.EventPayload;
+import com.rbkmoney.damsel.payment_processing.PartyEventData;
+import com.rbkmoney.scheduledpayoutworker.converter.BinaryConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -9,16 +10,16 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class BinaryConverterImpl implements BinaryConverter<EventPayload> {
+public class PartyEventConverter implements BinaryConverter<PartyEventData> {
 
     ThreadLocal<TDeserializer> deserializerLocal =
             ThreadLocal.withInitial(() -> new TDeserializer(new TBinaryProtocol.Factory()));
 
     @Override
-    public EventPayload convert(byte[] bin, Class<EventPayload> clazz) {
-        EventPayload event = new EventPayload();
+    public PartyEventData convert(byte[] bin) {
+        PartyEventData event = new PartyEventData();
         try {
-            deserializerLocal.get().deserialize(event, bin);
+            deserializerLocal.get().deserialize(new PartyEventData(), bin);
         } catch (TException e) {
             log.error("BinaryConverterImpl e: ", e);
         }
