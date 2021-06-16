@@ -45,13 +45,7 @@ public class InvoiceHandler implements PaymentProcessingHandler {
         log.info("Merchant shop have been saved, invoiceId={}, partyId={}, shopId={}",
                 invoice.getId(), invoice.getOwnerId(), invoice.getShopId());
 
-        PartyRevisionParam partyRevisionParam;
-        if (invoice.isSetPartyRevision()) {
-            partyRevisionParam = PartyRevisionParam.revision(invoice.getPartyRevision());
-        } else {
-            partyRevisionParam = PartyRevisionParam.timestamp(invoice.getCreatedAt());
-        }
-        Shop shop = partyManagementService.getShop(invoice.getOwnerId(), invoice.getShopId(), partyRevisionParam);
+        Shop shop = partyManagementService.getShop(invoice.getOwnerId(), invoice.getShopId());
 
         invoiceDao.save(
                 invoice.getId(),
