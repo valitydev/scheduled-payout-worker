@@ -1,6 +1,5 @@
 package com.rbkmoney.scheduledpayoutworker.serde.impl;
 
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;

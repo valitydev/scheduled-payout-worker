@@ -1,5 +1,6 @@
-package com.rbkmoney.scheduledpayoutworker;
+package com.rbkmoney.scheduledpayoutworker.integration;
 
+import com.rbkmoney.scheduledpayoutworker.ScheduledPayoutWorkerApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -15,10 +16,10 @@ import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(classes = ScheduledPayoutWorkerApplication.class,
-        initializers = AbstractIntegrationTest.Initializer.class)
+        initializers = AbstractPosgresIntegrationTest.Initializer.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Testcontainers
-public abstract class AbstractIntegrationTest {
+public abstract class AbstractPosgresIntegrationTest {
 
     @Container
     public static PostgreSQLContainer postgres = new PostgreSQLContainer(DockerImageName.parse("postgres:9.6"));

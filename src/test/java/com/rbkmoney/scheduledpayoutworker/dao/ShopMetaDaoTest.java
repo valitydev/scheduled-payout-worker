@@ -1,7 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.dao;
 
 import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
-import com.rbkmoney.scheduledpayoutworker.AbstractIntegrationTest;
+import com.rbkmoney.scheduledpayoutworker.integration.AbstractPosgresIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ShopMetaDaoTest extends AbstractIntegrationTest {
+public class ShopMetaDaoTest extends AbstractPosgresIntegrationTest {
 
     @Autowired
     private ShopMetaDao shopMetaDao;

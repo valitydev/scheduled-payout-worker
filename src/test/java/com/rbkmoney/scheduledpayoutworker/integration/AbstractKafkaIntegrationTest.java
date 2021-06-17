@@ -1,8 +1,7 @@
-package com.rbkmoney.scheduledpayoutworker.kafka;
+package com.rbkmoney.scheduledpayoutworker.integration;
 
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
-import com.rbkmoney.scheduledpayoutworker.AbstractIntegrationTest;
 import com.rbkmoney.scheduledpayoutworker.ScheduledPayoutWorkerApplication;
 import com.rbkmoney.scheduledpayoutworker.serde.impl.MachineEventSerializer;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +31,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Slf4j
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ContextConfiguration(classes = ScheduledPayoutWorkerApplication.class,
-        initializers = AbstractKafkaTest.Initializer.class)
+        initializers = AbstractKafkaIntegrationTest.Initializer.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Testcontainers
-public abstract class AbstractKafkaTest extends AbstractIntegrationTest {
+public abstract class AbstractKafkaIntegrationTest extends AbstractPosgresIntegrationTest {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;

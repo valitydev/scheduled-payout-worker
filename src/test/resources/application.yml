@@ -1,0 +1,71 @@
+management:
+  security:
+    flag: false
+  metrics:
+    export:
+      statsd:
+        flavor: etsy
+        enabled: false
+      prometheus:
+        enabled: false
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+spring:
+  application:
+    name: scheduled-payout-worker
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      idle-timeout: 30000
+      maximum-pool-size: 30
+  flyway:
+    table: schema_version
+    schemas: pt
+retry-policy:
+  maxAttempts: 10
+cache:
+  maxSize: 100
+service:
+  partyManagement:
+    url: http://hellgate:8022/v1/processing/partymgmt
+    networkTimeout: 5000
+  dominant:
+    url: http://dominant:8022/v1/domain/repository_client
+    networkTimeout: 5000
+  schedulator:
+    url: http://schedulator:8022/v1/schedulator
+    networkTimeout: 5000
+    callback-path: http://localhost:8022/v1/schedulator
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+  client-id: scheduled-payout-worker
+  consumer:
+    group-id: scheduled-payout-worker-group-1
+    enable-auto-commit: false
+    auto-offset-reset: earliest
+    max-poll-records: 20
+  topics:
+    invoice:
+      id: mg-invoice
+      enabled: true
+      concurrency: 1
+    party-management:
+      id: mg-party
+      enabled: true
+      concurrency: 1
+  ssl:
+    enabled: false

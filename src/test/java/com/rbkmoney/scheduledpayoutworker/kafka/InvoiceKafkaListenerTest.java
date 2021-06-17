@@ -5,6 +5,7 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.config.KafkaConfig;
 import com.rbkmoney.scheduledpayoutworker.converter.impl.EventPayloadConverter;
+import com.rbkmoney.scheduledpayoutworker.integration.AbstractKafkaIntegrationTest;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 @Slf4j
 @ContextConfiguration(classes = {KafkaConfig.class, InvoicingKafkaListener.class})
-public class InvoiceKafkaListenerTest extends AbstractKafkaTest {
+public class InvoiceKafkaListenerTest extends AbstractKafkaIntegrationTest {
 
     @Value("${kafka.topics.invoice.id}")
     public String topic;
