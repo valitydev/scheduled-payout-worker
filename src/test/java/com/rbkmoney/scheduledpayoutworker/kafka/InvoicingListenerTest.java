@@ -9,6 +9,7 @@ import com.rbkmoney.machinegun.msgpack.Value;
 import com.rbkmoney.scheduledpayoutworker.converter.impl.EventPayloadConverter;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +63,9 @@ public class InvoicingListenerTest {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        listener.handle(sinkEvent.getEvent(), ack);
+        listener.handle(List.of(
+                new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)
+        ), ack);
 
         Mockito.verify(paymentProcessingEventService, Mockito.times(0)).processEvent(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
@@ -79,7 +82,9 @@ public class InvoicingListenerTest {
 
         Mockito.when(parser.convert(message.getData().getBin())).thenThrow(new RuntimeException());
 
-        assertThrows(RuntimeException.class, () -> listener.handle(sinkEvent.getEvent(), ack));
+        assertThrows(RuntimeException.class, () -> listener.handle(List.of(
+                new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)),
+                ack));
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }
@@ -101,7 +106,9 @@ public class InvoicingListenerTest {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        listener.handle(sinkEvent.getEvent(), ack);
+        listener.handle(List.of(
+                new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)),
+                ack);
 
         Mockito.verify(paymentProcessingEventService, Mockito.times(1)).processEvent(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();

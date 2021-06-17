@@ -1,5 +1,6 @@
 package com.rbkmoney.scheduledpayoutworker.config;
 
+import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.config.properties.KafkaSslProperties;
 import com.rbkmoney.scheduledpayoutworker.serde.impl.MachineEventDeserializer;
@@ -16,10 +17,10 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.BatchErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.ErrorHandler;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
+import org.springframework.kafka.listener.SeekToCurrentBatchErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.io.File;
@@ -45,6 +46,8 @@ public class KafkaConfig {
     private String bootstrapServers;
     @Value("${kafka.topics.invoice.concurrency}")
     private int invoiceConcurrency;
+    @Value("${kafka.topics.party-management.concurrency}")
+    private int partyConcurrency;
 
     @Value("${retry-policy.maxAttempts}")
     int maxAttempts;
@@ -90,24 +93,28 @@ public class KafkaConfig {
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> invContainerFactory(
             ConsumerFactory<String, MachineEvent> consumerFactory) {
         var factory = createGeneralKafkaListenerFactory(consumerFactory);
-
-        factory.setErrorHandler(kafkaErrorHandler());
+        factory.setBatchListener(true);
+        factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
         factory.setConcurrency(invoiceConcurrency);
         return factory;
     }
 
-    private static ConcurrentKafkaListenerContainerFactory<String, MachineEvent> createGeneralKafkaListenerFactory(
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> pmContainerFactory(
+            ConsumerFactory<String, MachineEvent> consumerFactory) {
+        var factory = createGeneralKafkaListenerFactory(consumerFactory);
+        factory.setBatchListener(true);
+        factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
+        factory.setConcurrency(partyConcurrency);
+        return factory;
+    }
+
+    private ConcurrentKafkaListenerContainerFactory<String, MachineEvent> createGeneralKafkaListenerFactory(
             ConsumerFactory<String, MachineEvent> consumerFactory) {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, MachineEvent>();
         factory.setConsumerFactory(consumerFactory);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
-    }
-
-    public ErrorHandler kafkaErrorHandler() {
-        ErrorHandler errorHandler = new SeekToCurrentErrorHandler(new FixedBackOff(0L, Long.MAX_VALUE - 1));
-        errorHandler.setAckAfterHandle(false);
-        return errorHandler;
     }
 
 }

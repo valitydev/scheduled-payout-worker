@@ -10,4 +10,8 @@ public class TypeUtil {
                 .orElse(null);
     }
 
+    private TypeUtil() {
+        throw new UnsupportedOperationException("Unable to instantiate utility class!");
+    }
+
 }

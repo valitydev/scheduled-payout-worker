@@ -1,15 +1,10 @@
 package com.rbkmoney.scheduledpayoutworker.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.rbkmoney.damsel.domain.CashFlowAccount;
 import com.rbkmoney.damsel.domain.FinalCashFlowAccount;
 import com.rbkmoney.damsel.domain.FinalCashFlowPosting;
 import com.rbkmoney.damsel.domain.MerchantCashFlowAccount;
-import com.rbkmoney.geck.serializer.kit.json.JsonProcessor;
-import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
-import org.apache.thrift.TBase;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -40,6 +35,10 @@ public class DamselUtil {
         return finalCashFlow.stream().collect(
                 Collectors.groupingBy(CashFlowType::getCashFlowType,
                         Collectors.summingLong(cashFlow -> cashFlow.getVolume().getAmount())));
+    }
+
+    private DamselUtil() {
+        throw new UnsupportedOperationException("Unable to instantiate utility class!");
     }
 
 }
