@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class ScheduledJobContext {
 
-    private Long jobId;
+    private Integer jobId;
 
 }

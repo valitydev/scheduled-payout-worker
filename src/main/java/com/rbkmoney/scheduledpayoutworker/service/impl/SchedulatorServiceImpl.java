@@ -11,6 +11,8 @@ import com.rbkmoney.damsel.schedule.Schedule;
 import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
+import com.rbkmoney.scheduledpayoutworker.model.ScheduledJobContext;
+import com.rbkmoney.scheduledpayoutworker.serde.impl.ScheduledJobSerializer;
 import com.rbkmoney.scheduledpayoutworker.service.DominantService;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementService;
 import com.rbkmoney.scheduledpayoutworker.service.SchedulatorService;
@@ -19,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.rbkmoney.scheduledpayoutworker.util.GenerateUtil.generatePayoutScheduleId;
 
@@ -34,12 +37,14 @@ public class SchedulatorServiceImpl implements SchedulatorService {
 
     private final SchedulatorSrv.Iface schedulatorClient;
 
+    private final ScheduledJobSerializer scheduledJobSerializer;
+
     @Value("${service.schedulator.callback-path}")
     private String callbackPath;
 
     @Override
+    @Transactional
     public void registerJob(String partyId, String shopId, BusinessScheduleRef scheduleRef) {
-        //TODO: Проверить обязательные поля thrift'а на наличие
         log.info("Trying to send create job request, partyId='{}', shopId='{}', scheduleRef='{}'",
                 partyId, shopId, scheduleRef);
 
@@ -51,23 +56,27 @@ public class SchedulatorServiceImpl implements SchedulatorService {
                     "partyId='%s', shopId='%s', contractId='%s'", partyId, shop.getId(), shop.getContractId()));
         }
 
+        deregisterJob(partyId, shopId);
+
         CalendarRef calendarRef = paymentInstitution.getCalendar();
         shopMetaDao.save(partyId, shopId, calendarRef.getId(), scheduleRef.getId());
-        //deregister old schedule
         Schedule schedule = new Schedule();
         DominantBasedSchedule dominantBasedSchedule = new DominantBasedSchedule()
                 .setBusinessScheduleRef(new BusinessScheduleRef().setId(scheduleRef.getId()))
                 .setCalendarRef(calendarRef);
         schedule.setDominantSchedule(dominantBasedSchedule);
+
+        ScheduledJobContext context = new ScheduledJobContext();
+        context.setJobId(scheduleRef.getId());
+
         RegisterJobRequest registerJobRequest = new RegisterJobRequest()
                 .setSchedule(schedule)
                 .setExecutorServicePath(callbackPath)
-                .setContext(new byte[0]);
+                .setContext(scheduledJobSerializer.writeByte(context));
         String scheduleId = generatePayoutScheduleId(scheduleRef.getId());
         try {
             schedulatorClient.registerJob(scheduleId, registerJobRequest);
         } catch (TException e) {
-            //TODO: Обработка ScheduleAlreadyExists (вероятно на уровне вставки в shopMetaDao)
             throw new IllegalStateException(String.format("Register job '%s' failed", scheduleId), e);
         }
 
@@ -77,6 +86,7 @@ public class SchedulatorServiceImpl implements SchedulatorService {
     }
 
     @Override
+    @Transactional
     public void deregisterJob(String partyId, String shopId) {
         ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
         if (shopMeta != null) {
@@ -86,7 +96,6 @@ public class SchedulatorServiceImpl implements SchedulatorService {
                 try {
                     schedulatorClient.deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
                 } catch (TException e) {
-                    //TODO: Обработка ScheduleAlreadyExists (вероятно на уровне вставки в shopMetaDao)
                     throw new IllegalStateException(
                             String.format("Deregister job '%s' failed", shopMeta.getSchedulerId()), e);
                 }
