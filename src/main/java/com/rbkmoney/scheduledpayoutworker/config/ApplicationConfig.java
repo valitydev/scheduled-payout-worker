@@ -1,6 +1,5 @@
 package com.rbkmoney.scheduledpayoutworker.config;
 
-import com.rbkmoney.damsel.payment_processing.PartyEventData;
 import com.rbkmoney.damsel.payment_processing.PartyManagementSrv;
 import com.rbkmoney.woody.thrift.impl.http.THSpawnClientBuilder;
 import org.springframework.beans.factory.annotation.Value;

@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.config.KafkaConfig;
-import com.rbkmoney.scheduledpayoutworker.converter.SourceEventParser;
+import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -25,18 +25,18 @@ public class InvoiceKafkaListenerTest extends AbstractKafkaTest {
     public String topic;
 
     @MockBean
-    private SourceEventParser parser;
+    private SourceEventConverter parser;
 
     @Test
     public void listenChanges() {
-        when(parser.parseEvent(any())).thenReturn(EventPayload.invoice_changes(List.of(new InvoiceChange())));
+        when(parser.convert(any())).thenReturn(EventPayload.invoice_changes(List.of(new InvoiceChange())));
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(createTestMachineEvent());
 
         writeToTopic(topic, sinkEvent);
 
-        verify(parser, timeout(KAFKA_SYNC_TIME).times(1)).parseEvent(any());
+        verify(parser, timeout(KAFKA_SYNC_TIME).times(1)).convert(any());
     }
 
 }

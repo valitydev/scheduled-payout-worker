@@ -1,4 +1,4 @@
-package com.rbkmoney.scheduledpayoutworker.serde.impl;
+package com.rbkmoney.scheduledpayoutworker.serde.impl.kafka;
 
 
 import com.rbkmoney.machinegun.eventsink.SinkEvent;

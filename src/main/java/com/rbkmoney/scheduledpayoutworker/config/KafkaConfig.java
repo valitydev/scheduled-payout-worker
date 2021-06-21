@@ -2,7 +2,7 @@ package com.rbkmoney.scheduledpayoutworker.config;
 
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.config.properties.KafkaSslProperties;
-import com.rbkmoney.scheduledpayoutworker.serde.impl.MachineEventDeserializer;
+import com.rbkmoney.scheduledpayoutworker.serde.impl.kafka.MachineEventDeserializer;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;

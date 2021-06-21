@@ -4,7 +4,7 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.AbstractIntegrationTest;
 import com.rbkmoney.scheduledpayoutworker.ScheduledPayoutWorkerApplication;
-import com.rbkmoney.scheduledpayoutworker.serde.impl.MachineEventSerializer;
+import com.rbkmoney.scheduledpayoutworker.serde.impl.kafka.MachineEventSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
