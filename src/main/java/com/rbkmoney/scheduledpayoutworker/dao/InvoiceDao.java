@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public interface InvoiceDao extends GenericDao {
 
-    void save(String invoiceId, String partyId, String shopId, String contractId,
+    void save(String invoiceId, String partyId, String shopId,
               Long partyRevision, LocalDateTime createdAt) throws DaoException;
 
     Invoice get(String invoiceId) throws DaoException;

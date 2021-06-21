@@ -2,7 +2,6 @@ package com.rbkmoney.scheduledpayoutworker.poller.listener;
 
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.converter.SourceEventParser;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
 import lombok.RequiredArgsConstructor;

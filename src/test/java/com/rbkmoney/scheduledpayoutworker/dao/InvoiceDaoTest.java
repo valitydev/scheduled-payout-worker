@@ -19,10 +19,10 @@ public class InvoiceDaoTest extends AbstractIntegrationTest {
         Invoice invoice = random(Invoice.class);
 
         invoiceDao.save(invoice.getId(), invoice.getPartyId(), invoice.getShopId(),
-                invoice.getContractId(), null, invoice.getCreatedAt());
+                null, invoice.getCreatedAt());
         //save again
         invoiceDao.save(invoice.getId(), invoice.getPartyId(), invoice.getShopId(),
-                invoice.getContractId(), invoice.getPartyRevision(), invoice.getCreatedAt());
+                invoice.getPartyRevision(), invoice.getCreatedAt());
 
         assertEquals(invoice, invoiceDao.get(invoice.getId()));
     }

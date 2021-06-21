@@ -75,7 +75,6 @@ public class InvoicePaymentHandler implements PaymentProcessingHandler {
 
         payment.setPartyId(invoice.getPartyId());
         payment.setShopId(invoice.getShopId());
-        payment.setContractId(invoice.getContractId());
 
         payment.setPaymentId(invoicePayment.getId());
         payment.setStatus(PaymentStatus.PENDING);
