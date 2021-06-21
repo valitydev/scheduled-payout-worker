@@ -7,23 +7,17 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundCreated;
 import com.rbkmoney.geck.common.util.TypeUtil;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.enums.RefundStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.payouter.domain.tables.pojos.Refund;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
-import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.CashFlowType;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -31,25 +25,22 @@ import java.util.Map;
 import static com.rbkmoney.scheduledpayoutworker.util.CashFlowType.FEE;
 import static com.rbkmoney.scheduledpayoutworker.util.CashFlowType.RETURN_FEE;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class InvoicePaymentRefundHandler implements PaymentProcessingHandler {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final RefundDao refundDao;
 
     private final PaymentDao paymentDao;
 
-    private final Filter filter;
-
-    @Autowired
-    public InvoicePaymentRefundHandler(RefundDao refundDao, PaymentDao paymentDao) {
-        this.refundDao = refundDao;
-        this.paymentDao = paymentDao;
-        this.filter = new PathConditionFilter(new PathConditionRule(
-                "invoice_payment_change.payload.invoice_payment_refund_change.payload" +
-                        ".invoice_payment_refund_created",
-                new IsNullCondition().not()));
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .isSetInvoicePaymentRefundChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentRefundChange().getPayload().isSetInvoicePaymentRefundCreated();
     }
 
     @Override
@@ -108,8 +99,4 @@ public class InvoicePaymentRefundHandler implements PaymentProcessingHandler {
         log.info("Refund have been saved, refund={}", refund);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return filter;
-    }
 }

@@ -5,14 +5,9 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackLevyChanged;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
-import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +18,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class InvoicePaymentChargebackLevyChangedHandler implements PaymentProcessingHandler {
 
-    private static final Filter PREDICATE_FILTER = new PathConditionFilter(new PathConditionRule(
-            "invoice_payment_change.payload.invoice_payment_chargeback_change.payload" +
-                    ".invoice_payment_chargeback_levy_changed",
-            new IsNullCondition().not()));
-
     private final ChargebackDao chargebackDao;
+
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .isSetInvoicePaymentChargebackChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentChargebackChange().getPayload()
+                .isSetInvoicePaymentChargebackLevyChanged();
+    }
 
     @Override
     public void handle(InvoiceChange invoiceChange, MachineEvent event) {
@@ -61,8 +61,4 @@ public class InvoicePaymentChargebackLevyChangedHandler implements PaymentProces
                 invoiceId, paymentId, chargebackId);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return PREDICATE_FILTER;
-    }
 }

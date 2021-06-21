@@ -4,14 +4,9 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackCashFlowChanged;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackChange;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
-import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +18,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class InvoicePaymentChargebackCashFlowChangedHandler implements PaymentProcessingHandler {
 
-    private static final Filter PREDICATE_FILTER = new PathConditionFilter(new PathConditionRule(
-            "invoice_payment_change.payload.invoice_payment_chargeback_change.payload" +
-                    ".invoice_payment_chargeback_cash_flow_changed",
-            new IsNullCondition().not()));
 
     private final ChargebackDao chargebackDao;
+
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .isSetInvoicePaymentChargebackChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentChargebackChange().getPayload()
+                .isSetInvoicePaymentChargebackCashFlowChanged();
+    }
 
     @Override
     public void handle(InvoiceChange invoiceChange, MachineEvent event) {
@@ -61,8 +62,4 @@ public class InvoicePaymentChargebackCashFlowChangedHandler implements PaymentPr
                 invoiceId, paymentId, chargebackId);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return PREDICATE_FILTER;
-    }
 }

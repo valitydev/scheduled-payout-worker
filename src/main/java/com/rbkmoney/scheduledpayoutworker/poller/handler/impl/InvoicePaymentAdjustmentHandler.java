@@ -5,43 +5,35 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentAdjustmentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.geck.common.util.TypeUtil;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.enums.AdjustmentStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Adjustment;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
-import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final AdjustmentDao adjustmentDao;
 
     private final PaymentDao paymentDao;
 
-    private final Filter filter;
-
-    @Autowired
-    public InvoicePaymentAdjustmentHandler(AdjustmentDao adjustmentDao, PaymentDao paymentDao) {
-        this.adjustmentDao = adjustmentDao;
-        this.paymentDao = paymentDao;
-        this.filter = new PathConditionFilter(new PathConditionRule(
-                "invoice_payment_change.payload.invoice_payment_adjustment_change.payload" +
-                        ".invoice_payment_adjustment_created",
-                new IsNullCondition().not()));
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
+                && invoiceChange
+                .getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentAdjustmentChange().getPayload()
+                .isSetInvoicePaymentAdjustmentCreated();
     }
 
     @Override
@@ -86,8 +78,4 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
         log.info("Adjustment have been saved, adjustment={}", adjustment);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return filter;
-    }
 }

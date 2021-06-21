@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.domain.Party;
 import com.rbkmoney.damsel.domain.Shop;
 import com.rbkmoney.damsel.payment_processing.ClaimEffect;
 import com.rbkmoney.damsel.payment_processing.PartyChange;
-import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PartyManagementHandler;
@@ -27,6 +26,11 @@ public class ShopPayoutToolChangedHandler implements PartyManagementHandler {
     private final ShopMetaDao shopMetaDao;
 
     @Override
+    public boolean accept(PartyChange partyChange) {
+        return getClaimStatus(partyChange).isSetAccepted();
+    }
+
+    @Override
     public void handle(PartyChange change, MachineEvent event) {
         List<ClaimEffect> claimEffects = getClaimStatus(change).getAccepted().getEffects();
         for (ClaimEffect claimEffect : claimEffects) {
@@ -34,11 +38,6 @@ public class ShopPayoutToolChangedHandler implements PartyManagementHandler {
                 handleEvent(event, claimEffect);
             }
         }
-    }
-
-    @Override
-    public Filter<PartyChange> getFilter() {
-        return null;
     }
 
     private void handleEvent(MachineEvent event, ClaimEffect claimEffect) {
