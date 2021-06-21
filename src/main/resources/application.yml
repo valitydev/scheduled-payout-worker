@@ -64,6 +64,10 @@ kafka:
       id: mg-invoice-100-2
       enabled: false
       concurrency: 1
+    party-management:
+      id: mg-events-party
+      enabled: false
+      concurrency: 1
   ssl:
     enabled: false
 

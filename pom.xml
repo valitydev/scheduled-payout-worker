@@ -127,6 +127,10 @@
             <groupId>com.rbkmoney.geck</groupId>
             <artifactId>filter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>kafka-common-lib</artifactId>
+        </dependency>
 
         <!--test-->
         <dependency>

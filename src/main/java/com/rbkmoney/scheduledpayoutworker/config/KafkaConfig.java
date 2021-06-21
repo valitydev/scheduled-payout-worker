@@ -1,8 +1,9 @@
 package com.rbkmoney.scheduledpayoutworker.config;
 
+import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.config.properties.KafkaSslProperties;
-import com.rbkmoney.scheduledpayoutworker.serde.impl.kafka.MachineEventDeserializer;
+import com.rbkmoney.scheduledpayoutworker.serde.impl.kafka.SinkEventDeserializer;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
@@ -18,9 +19,6 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.ErrorHandler;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
-import org.springframework.util.backoff.FixedBackOff;
 
 import java.io.File;
 import java.util.HashMap;
@@ -45,6 +43,8 @@ public class KafkaConfig {
     private String bootstrapServers;
     @Value("${kafka.topics.invoice.concurrency}")
     private int invoiceConcurrency;
+    @Value("${kafka.topics.party-management.concurrency}")
+    private int partyConcurrency;
 
     @Value("${retry-policy.maxAttempts}")
     int maxAttempts;
@@ -54,7 +54,7 @@ public class KafkaConfig {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MachineEventDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SinkEventDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
@@ -91,8 +91,19 @@ public class KafkaConfig {
             ConsumerFactory<String, MachineEvent> consumerFactory) {
         var factory = createGeneralKafkaListenerFactory(consumerFactory);
 
-        factory.setErrorHandler(kafkaErrorHandler());
+        factory.setBatchListener(true);
+        factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
         factory.setConcurrency(invoiceConcurrency);
+        return factory;
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> pmContainerFactory(
+            ConsumerFactory<String, MachineEvent> consumerFactory) {
+        var factory = createGeneralKafkaListenerFactory(consumerFactory);
+        factory.setBatchListener(true);
+        factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
+        factory.setConcurrency(partyConcurrency);
         return factory;
     }
 
@@ -104,10 +115,5 @@ public class KafkaConfig {
         return factory;
     }
 
-    public ErrorHandler kafkaErrorHandler() {
-        ErrorHandler errorHandler = new SeekToCurrentErrorHandler(new FixedBackOff(0L, Long.MAX_VALUE - 1));
-        errorHandler.setAckAfterHandle(false);
-        return errorHandler;
-    }
 
 }

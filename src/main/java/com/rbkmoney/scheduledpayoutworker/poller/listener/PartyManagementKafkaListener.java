@@ -1,6 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.poller.listener;
 
 import com.rbkmoney.damsel.payment_processing.PartyEventData;
+import com.rbkmoney.kafka.common.util.LogUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.converter.PartyEventConverter;
@@ -30,5 +31,8 @@ public class PartyManagementKafkaListener {
                 partyManagementService.processEvent(machineEvent, partyEventData);
             }
         }
+        ack.acknowledge();
+        log.info("Batch partyManagement has been committed, size={}, {}", messages.size(),
+                LogUtil.toSummaryStringWithSinkEventValues(messages));
     }
 }

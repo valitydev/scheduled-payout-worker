@@ -10,7 +10,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import java.util.Map;
 
 @Slf4j
-public class MachineEventSerializer implements Serializer<SinkEvent> {
+public class SinkEventSerializer implements Serializer<SinkEvent> {
 
     ThreadLocal<TSerializer> serializerThreadLocal =
             ThreadLocal.withInitial(() -> new TSerializer(new TBinaryProtocol.Factory()));
