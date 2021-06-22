@@ -22,7 +22,7 @@ public class PartyManagementEventServiceImpl implements PartyManagementEventServ
     private final List<PartyManagementHandler> handlers;
 
     @Override
-    public void processPayloadEvent(MachineEvent event, PartyEventData eventPayload)
+    public void processEvent(MachineEvent event, PartyEventData eventPayload)
             throws StorageException, NotFoundException {
         long eventId = event.getEventId();
         String createdAt = event.getCreatedAt();

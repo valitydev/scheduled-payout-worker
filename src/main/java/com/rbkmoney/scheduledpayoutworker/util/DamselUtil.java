@@ -1,12 +1,12 @@
 package com.rbkmoney.scheduledpayoutworker.util;
 
-import com.rbkmoney.damsel.domain.CashFlowAccount;
-import com.rbkmoney.damsel.domain.FinalCashFlowAccount;
-import com.rbkmoney.damsel.domain.FinalCashFlowPosting;
-import com.rbkmoney.damsel.domain.MerchantCashFlowAccount;
+import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.payment_processing.ClaimStatus;
+import com.rbkmoney.damsel.payment_processing.PartyChange;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,6 +39,38 @@ public class DamselUtil {
 
     private DamselUtil() {
         throw new UnsupportedOperationException("Unable to instantiate utility class!");
+    }
+
+    public static boolean hasPaymentInstitutionAccountPayTool(Party party,
+                                                              String shopContractId,
+                                                              String shopPayoutToolId) {
+        Optional<Contract> contractOptional = party.getContracts().values().stream()
+                .filter(contract -> contract.getId().equals(shopContractId))
+                .filter(contract -> contract.getPayoutTools().stream()
+                        .anyMatch(payoutToolValue -> payoutToolValue.getId().equals(shopPayoutToolId)))
+                .findFirst();
+
+        if (contractOptional.isEmpty()) {
+            return false;
+        }
+
+        Optional<PayoutTool> payoutToolOptional = contractOptional.get().getPayoutTools().stream()
+                .filter(
+                        payoutTool -> payoutTool.getPayoutToolInfo().isSetPaymentInstitutionAccount()
+                )
+                .findFirst();
+
+        return payoutToolOptional.isPresent();
+    }
+
+    public static ClaimStatus getClaimStatus(PartyChange change) {
+        ClaimStatus claimStatus = null;
+        if (change.isSetClaimCreated()) {
+            claimStatus = change.getClaimCreated().getStatus();
+        } else if (change.isSetClaimStatusChanged()) {
+            claimStatus = change.getClaimStatusChanged().getStatus();
+        }
+        return claimStatus;
     }
 
 }

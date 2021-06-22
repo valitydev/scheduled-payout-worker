@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.config.KafkaConfig;
-import com.rbkmoney.scheduledpayoutworker.converter.impl.EventPayloadConverter;
+import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
 import com.rbkmoney.scheduledpayoutworker.integration.AbstractKafkaIntegrationTest;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class InvoiceKafkaListenerTest extends AbstractKafkaIntegrationTest {
     public String topic;
 
     @MockBean
-    private EventPayloadConverter parser;
+    private SourceEventConverter parser;
 
     @Test
     public void listenChanges() {

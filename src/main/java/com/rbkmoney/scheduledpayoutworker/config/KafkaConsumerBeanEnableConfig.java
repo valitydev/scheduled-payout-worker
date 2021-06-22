@@ -1,7 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.config;
 
-import com.rbkmoney.scheduledpayoutworker.converter.impl.EventPayloadConverter;
-import com.rbkmoney.scheduledpayoutworker.converter.impl.PartyEventConverter;
+import com.rbkmoney.scheduledpayoutworker.converter.PartyEventConverter;
+import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.PartyManagementKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementEventService;
@@ -19,7 +19,7 @@ public class KafkaConsumerBeanEnableConfig {
     @ConditionalOnProperty(value = "kafka.topics.invoice.enabled", havingValue = "true")
     public InvoicingKafkaListener paymentEventsKafkaListener(
             PaymentProcessingEventService paymentEventService,
-            EventPayloadConverter parser) {
+            SourceEventConverter parser) {
         return new InvoicingKafkaListener(paymentEventService, parser);
     }
 

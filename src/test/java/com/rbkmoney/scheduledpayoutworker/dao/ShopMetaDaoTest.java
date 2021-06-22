@@ -24,13 +24,13 @@ public class ShopMetaDaoTest extends AbstractPosgresIntegrationTest {
         String partyId = "partyId";
         String shopId = "shopId";
 
-        shopMetaDao.save(partyId, shopId);
+        shopMetaDao.save(partyId, shopId, true);
         ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
 
-        shopMetaDao.save(partyId, shopId);
+        shopMetaDao.save(partyId, shopId, true);
         assertTrue(shopMeta.getWtime().isBefore(shopMetaDao.get(partyId, shopId).getWtime()));
 
-        shopMetaDao.save(partyId, shopId, 1, 2);
+        shopMetaDao.save(partyId, shopId, 1, 2, true);
         shopMeta = shopMetaDao.get(partyId, shopId);
 
         assertEquals(partyId, shopMeta.getPartyId());
@@ -38,14 +38,14 @@ public class ShopMetaDaoTest extends AbstractPosgresIntegrationTest {
         assertEquals(1, (int) shopMeta.getCalendarId());
         assertEquals(2, (int) shopMeta.getSchedulerId());
 
-        shopMetaDao.save(partyId, shopId, 2, 1);
+        shopMetaDao.save(partyId, shopId, 2, 1, true);
         shopMeta = shopMetaDao.get(partyId, shopId);
         assertEquals(partyId, shopMeta.getPartyId());
         assertEquals(shopId, shopMeta.getShopId());
         assertEquals(2, (int) shopMeta.getCalendarId());
         assertEquals(1, (int) shopMeta.getSchedulerId());
 
-        shopMetaDao.save("test2", "test2", 2, 1);
+        shopMetaDao.save("test2", "test2", 2, 1, true);
         List<ShopMeta> activeShops = shopMetaDao.getAllActiveShops();
         assertEquals(2, activeShops.size());
 
@@ -68,7 +68,7 @@ public class ShopMetaDaoTest extends AbstractPosgresIntegrationTest {
         String shopId = "shopId";
         long sleep = 1000L;
 
-        shopMetaDao.save(partyId, shopId);
+        shopMetaDao.save(partyId, shopId, true);
 
         final ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
         CountDownLatch latch = new CountDownLatch(1);
@@ -81,7 +81,7 @@ public class ShopMetaDaoTest extends AbstractPosgresIntegrationTest {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    shopMetaDao.save(partyId, shopId);
+                    shopMetaDao.save(partyId, shopId, true);
                     return exclusive;
                 })
         ).start();

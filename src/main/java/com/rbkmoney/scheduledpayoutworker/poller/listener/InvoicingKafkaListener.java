@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.kafka.common.util.LogUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
-import com.rbkmoney.scheduledpayoutworker.converter.impl.EventPayloadConverter;
+import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import java.util.List;
 public class InvoicingKafkaListener {
 
     private final PaymentProcessingEventService paymentProcessingEventService;
-    private final EventPayloadConverter parser;
+    private final SourceEventConverter parser;
 
     @KafkaListener(topics = "${kafka.topics.invoice.id}", containerFactory = "invContainerFactory")
     public void handle(List<ConsumerRecord<String, SinkEvent>> messages, Acknowledgment ack) {
@@ -28,7 +28,7 @@ public class InvoicingKafkaListener {
             if (sinkEvent != null && sinkEvent.value().isSetEvent()) {
                 MachineEvent event = sinkEvent.value().getEvent();
                 log.debug("Reading sinkEvent, sourceId: {}, sequenceId: {}", event.getSourceId(), event.getEventId());
-                EventPayload payload = parser.convert(event.getData().getBin());
+                EventPayload payload = parser.convert(event);
                 if (payload.isSetInvoiceChanges()) {
                     paymentProcessingEventService.processEvent(event, payload);
                 }

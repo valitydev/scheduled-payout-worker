@@ -6,7 +6,7 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
-import com.rbkmoney.scheduledpayoutworker.converter.impl.EventPayloadConverter;
+import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -29,7 +29,7 @@ public class InvoicingListenerTest {
     @Mock
     private PaymentProcessingEventService paymentProcessingEventService;
     @Mock
-    private EventPayloadConverter parser;
+    private SourceEventConverter parser;
     @Mock
     private Acknowledgment ack;
 
@@ -56,7 +56,7 @@ public class InvoicingListenerTest {
         message.getData().setBin(new byte[0]);
         EventPayload payload = new EventPayload();
         payload.setCustomerChanges(List.of());
-        Mockito.when(parser.convert(message.getData().getBin())).thenReturn(payload);
+        Mockito.when(parser.convert(message)).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
@@ -78,11 +78,11 @@ public class InvoicingListenerTest {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        Mockito.when(parser.convert(message.getData().getBin())).thenThrow(new RuntimeException());
+        Mockito.when(parser.convert(message)).thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> listener.handle(List.of(
-                new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)),
-                ack));
+                new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)
+        ), ack));
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }
@@ -96,17 +96,14 @@ public class InvoicingListenerTest {
         payload.setInvoiceChanges(invoiceChanges);
         event.setPayload(payload);
         MachineEvent message = new MachineEvent();
-        message.setData(new Value());
-        message.getData().setBin(new byte[0]);
-
-        Mockito.when(parser.convert(message.getData().getBin())).thenReturn(payload);
+        Mockito.when(parser.convert(message)).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
         listener.handle(List.of(
-                new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)),
-                ack);
+                new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)
+        ), ack);
 
         Mockito.verify(paymentProcessingEventService, Mockito.times(1)).processEvent(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();

@@ -2,39 +2,32 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
-import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.CashFlowType;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 import static com.rbkmoney.scheduledpayoutworker.util.CashFlowType.*;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class InvoicePaymentCashFlowChangedHandler implements PaymentProcessingHandler {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final PaymentDao paymentDao;
 
-    private final Filter filter;
-
-    public InvoicePaymentCashFlowChangedHandler(PaymentDao paymentDao) {
-        this.paymentDao = paymentDao;
-        this.filter = new PathConditionFilter(new PathConditionRule(
-                "invoice_payment_change.payload.invoice_payment_cash_flow_changed",
-                new IsNullCondition().not()));
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange()
+                .getPayload().isSetInvoicePaymentCashFlowChanged();
     }
 
     @Override
@@ -44,8 +37,8 @@ public class InvoicePaymentCashFlowChangedHandler implements PaymentProcessingHa
         String paymentId = invoicePaymentChange.getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            throw new NotFoundException(String.format("Invoice payment not found, invoiceId='%s', paymentId='%s'",
-                    invoiceId, paymentId));
+            log.warn("Invoice payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
+            return;
         }
 
         var finalCashFlow = invoicePaymentChange.getPayload().getInvoicePaymentCashFlowChanged().getCashFlow();
@@ -61,8 +54,4 @@ public class InvoicePaymentCashFlowChangedHandler implements PaymentProcessingHa
                 finalCashFlow, invoiceId, paymentId);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return filter;
-    }
 }

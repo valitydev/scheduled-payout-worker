@@ -59,7 +59,8 @@ public class SchedulatorServiceImpl implements SchedulatorService {
         deregisterJob(partyId, shopId);
 
         CalendarRef calendarRef = paymentInstitution.getCalendar();
-        shopMetaDao.save(partyId, shopId, calendarRef.getId(), scheduleRef.getId());
+        //TODO: Уточнить, нужно ли регистрировать джоб, если AccPayoutTool == false
+        shopMetaDao.save(partyId, shopId, calendarRef.getId(), scheduleRef.getId(), true);
         Schedule schedule = new Schedule();
         DominantBasedSchedule dominantBasedSchedule = new DominantBasedSchedule()
                 .setBusinessScheduleRef(new BusinessScheduleRef().setId(scheduleRef.getId()))

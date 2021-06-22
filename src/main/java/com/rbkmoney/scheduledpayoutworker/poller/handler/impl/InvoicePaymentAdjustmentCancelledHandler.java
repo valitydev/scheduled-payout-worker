@@ -3,10 +3,6 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentAdjustmentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
@@ -21,12 +17,19 @@ public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessi
 
     private final AdjustmentDao adjustmentDao;
 
-    private final Filter filter = new PathConditionFilter(
-            new PathConditionRule(
-                    "invoice_payment_change.payload.invoice_payment_adjustment_change.payload" +
-                            ".invoice_payment_adjustment_status_changed.status.cancelled",
-                    new IsNullCondition().not())
-    );
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
+                && invoiceChange
+                .getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentAdjustmentChange().getPayload()
+                .isSetInvoicePaymentAdjustmentStatusChanged()
+                && invoiceChange
+                .getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentAdjustmentChange().getPayload()
+                .getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCancelled();
+    }
 
     @Override
     public void handle(InvoiceChange invoiceChange, MachineEvent event) {
@@ -46,8 +49,4 @@ public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessi
                 invoiceId, paymentId, adjustmentId);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return filter;
-    }
 }

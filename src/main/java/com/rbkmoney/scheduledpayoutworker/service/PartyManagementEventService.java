@@ -7,7 +7,7 @@ import com.rbkmoney.scheduledpayoutworker.exception.StorageException;
 
 public interface PartyManagementEventService {
 
-    void processPayloadEvent(MachineEvent machineEvent, PartyEventData eventPayload)
+    void processEvent(MachineEvent machineEvent, PartyEventData eventPayload)
             throws StorageException, NotFoundException;
 
 }

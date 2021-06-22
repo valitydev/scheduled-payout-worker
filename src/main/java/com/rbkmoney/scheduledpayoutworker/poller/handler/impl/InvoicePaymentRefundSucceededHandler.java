@@ -4,36 +4,33 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundChange;
 import com.rbkmoney.geck.common.util.TypeUtil;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class InvoicePaymentRefundSucceededHandler implements PaymentProcessingHandler {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final RefundDao refundDao;
 
-    private final Filter filter;
 
-    @Autowired
-    public InvoicePaymentRefundSucceededHandler(RefundDao refundDao) {
-        this.refundDao = refundDao;
-        this.filter = new PathConditionFilter(new PathConditionRule(
-                "invoice_payment_change.payload.invoice_payment_refund_change.payload" +
-                        ".invoice_payment_refund_status_changed.status.succeeded",
-                new IsNullCondition().not()));
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .isSetInvoicePaymentRefundChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentRefundChange().getPayload().isSetInvoicePaymentRefundStatusChanged()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentRefundChange().getPayload()
+                .getInvoicePaymentRefundStatusChanged().getStatus().isSetSucceeded();
     }
 
     @Override
@@ -56,8 +53,4 @@ public class InvoicePaymentRefundSucceededHandler implements PaymentProcessingHa
                 invoiceId, paymentId, refundId);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return filter;
-    }
 }

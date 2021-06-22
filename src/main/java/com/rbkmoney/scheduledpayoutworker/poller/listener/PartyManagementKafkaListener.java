@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.payment_processing.PartyEventData;
 import com.rbkmoney.kafka.common.util.LogUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
-import com.rbkmoney.scheduledpayoutworker.converter.impl.PartyEventConverter;
+import com.rbkmoney.scheduledpayoutworker.converter.PartyEventConverter;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +27,10 @@ public class PartyManagementKafkaListener {
         for (ConsumerRecord<String, SinkEvent> message : messages) {
             if (message != null && message.value().isSetEvent()) {
                 MachineEvent machineEvent = message.value().getEvent();
-                PartyEventData partyEventData = partyEventDataParser.convert(machineEvent.getData().getBin());
-                partyManagementService.processPayloadEvent(machineEvent, partyEventData);
+                PartyEventData partyEventData = partyEventDataParser.convert(machineEvent);
+                partyManagementService.processEvent(machineEvent, partyEventData);
             }
         }
-
         ack.acknowledge();
         log.info("Batch partyManagement has been committed, size={}, {}", messages.size(),
                 LogUtil.toSummaryStringWithSinkEventValues(messages));

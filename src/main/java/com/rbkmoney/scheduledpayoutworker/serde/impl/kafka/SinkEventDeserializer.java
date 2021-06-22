@@ -1,4 +1,4 @@
-package com.rbkmoney.scheduledpayoutworker.serde.impl;
+package com.rbkmoney.scheduledpayoutworker.serde.impl.kafka;
 
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +9,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import java.util.Map;
 
 @Slf4j
-public class MachineEventDeserializer implements Deserializer<SinkEvent> {
+public class SinkEventDeserializer implements Deserializer<SinkEvent> {
 
     ThreadLocal<TDeserializer> deserializerThreadLocal =
             ThreadLocal.withInitial(() -> new TDeserializer(new TBinaryProtocol.Factory()));
@@ -21,13 +21,13 @@ public class MachineEventDeserializer implements Deserializer<SinkEvent> {
 
     @Override
     public SinkEvent deserialize(String topic, byte[] data) {
-        SinkEvent machineEvent = new SinkEvent();
+        SinkEvent sinkEvent = new SinkEvent();
         try {
-            deserializerThreadLocal.get().deserialize(machineEvent, data);
+            deserializerThreadLocal.get().deserialize(sinkEvent, data);
         } catch (Exception e) {
             log.error("Error when deserialize machine event data: {} ", data, e);
         }
-        return machineEvent;
+        return sinkEvent;
     }
 
     @Override

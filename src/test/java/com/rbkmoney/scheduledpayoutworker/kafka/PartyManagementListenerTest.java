@@ -5,7 +5,7 @@ import com.rbkmoney.damsel.payment_processing.PartyEventData;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
-import com.rbkmoney.scheduledpayoutworker.converter.impl.PartyEventConverter;
+import com.rbkmoney.scheduledpayoutworker.converter.PartyEventConverter;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.PartyManagementKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -56,7 +56,7 @@ public class PartyManagementListenerTest {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        Mockito.when(parser.convert(message.getData().getBin())).thenThrow(new RuntimeException());
+        Mockito.when(parser.convert(message)).thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> listener.handle(List.of(
                 new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)),
@@ -75,7 +75,7 @@ public class PartyManagementListenerTest {
         message.setData(new Value());
         message.getData().setBin(new byte[0]);
 
-        Mockito.when(parser.convert(message.getData().getBin())).thenReturn(partyEventData);
+        Mockito.when(parser.convert(message)).thenReturn(partyEventData);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
@@ -84,7 +84,7 @@ public class PartyManagementListenerTest {
                 new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)),
                 ack);
 
-        Mockito.verify(partyManagementEventService, Mockito.times(1)).processPayloadEvent(any(), any());
+        Mockito.verify(partyManagementEventService, Mockito.times(1)).processEvent(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 }

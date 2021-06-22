@@ -7,23 +7,17 @@ import com.rbkmoney.damsel.domain.PaymentRoute;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentStarted;
 import com.rbkmoney.geck.common.util.TypeUtil;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.enums.PaymentStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
-import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.CashFlowType;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -34,24 +28,19 @@ import java.util.Map;
 
 import static com.rbkmoney.scheduledpayoutworker.util.CashFlowType.*;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class InvoicePaymentHandler implements PaymentProcessingHandler {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final InvoiceDao invoiceDao;
 
     private final PaymentDao paymentDao;
 
-    private final Filter filter;
-
-    @Autowired
-    public InvoicePaymentHandler(InvoiceDao invoiceDao, PaymentDao paymentDao) {
-        this.invoiceDao = invoiceDao;
-        this.paymentDao = paymentDao;
-        this.filter = new PathConditionFilter(new PathConditionRule(
-                "invoice_payment_change.payload.invoice_payment_started",
-                new IsNullCondition().not()));
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentStarted();
     }
 
     @Override
@@ -70,13 +59,12 @@ public class InvoicePaymentHandler implements PaymentProcessingHandler {
 
         Invoice invoice = invoiceDao.get(invoiceId);
         if (invoice == null) {
-            throw new NotFoundException(String.format("Invoice on payment not found, invoiceId='%s', paymentId='%s'",
-                    invoiceId, invoicePayment.getId()));
+            log.warn("Invoice on payment not found, invoiceId='{}', paymentId='{}'", invoiceId, invoicePayment.getId());
+            return;
         }
 
         payment.setPartyId(invoice.getPartyId());
         payment.setShopId(invoice.getShopId());
-        payment.setContractId(invoice.getContractId());
 
         payment.setPaymentId(invoicePayment.getId());
         payment.setStatus(PaymentStatus.PENDING);
@@ -114,8 +102,4 @@ public class InvoicePaymentHandler implements PaymentProcessingHandler {
         log.info("Payment have been saved, payment={}", payment);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return filter;
-    }
 }

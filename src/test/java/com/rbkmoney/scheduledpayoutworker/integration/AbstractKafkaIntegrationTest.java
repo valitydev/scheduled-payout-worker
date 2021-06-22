@@ -3,7 +3,7 @@ package com.rbkmoney.scheduledpayoutworker.integration;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.ScheduledPayoutWorkerApplication;
-import com.rbkmoney.scheduledpayoutworker.serde.impl.MachineEventSerializer;
+import com.rbkmoney.scheduledpayoutworker.serde.impl.kafka.SinkEventSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -81,7 +81,7 @@ public abstract class AbstractKafkaIntegrationTest extends AbstractPosgresIntegr
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "client_id");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, MachineEventSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, SinkEventSerializer.class);
         return new KafkaProducer<>(props);
     }
 

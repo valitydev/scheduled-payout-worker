@@ -13,8 +13,6 @@ CREATE TABLE pt.adjustment
     adjustment_id   CHARACTER VARYING           NOT NULL,
     status          pt.adjustment_status        NOT NULL DEFAULT 'PENDING',
     created_at      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    domain_revision BIGINT                      NOT NULL,
-    reason          CHARACTER VARYING           NOT NULL,
     captured_at     TIMESTAMP WITHOUT TIME ZONE,
     payout_id       CHARACTER VARYING,
     amount          BIGINT                               DEFAULT 0,
@@ -43,10 +41,6 @@ CREATE TABLE pt.chargeback
     payout_id          CHARACTER VARYING,
     status             pt.chargeback_status        NOT NULL DEFAULT 'PENDING',
     created_at         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    reason             CHARACTER VARYING,
-    reason_category    pt.chargeback_category      NOT NULL,
-    domain_revision    BIGINT                      NOT NULL,
-    party_revision     BIGINT,
     amount             BIGINT                      NOT NULL,
     currency_code      CHARACTER VARYING           NOT NULL,
     levy_amount        BIGINT                      NOT NULL,
@@ -66,7 +60,6 @@ CREATE TABLE pt.invoice
     id             CHARACTER VARYING           NOT NULL,
     party_id       CHARACTER VARYING           NOT NULL,
     shop_id        CHARACTER VARYING           NOT NULL,
-    contract_id    CHARACTER VARYING           NOT NULL,
     created_at     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     party_revision BIGINT,
     CONSTRAINT invoice_pkey PRIMARY KEY (id)
@@ -95,7 +88,6 @@ CREATE TABLE pt.payment
     guarantee_deposit BIGINT                               DEFAULT 0,
     terminal_id       INTEGER,
     domain_revision   BIGINT,
-    contract_id       CHARACTER VARYING           NOT NULL,
     party_revision    BIGINT,
     CONSTRAINT payment_pkey PRIMARY KEY (id)
 );
@@ -135,11 +127,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS refund_ukey ON pt.refund USING btree (invoice_
 
 CREATE TABLE pt.shop_meta
 (
-    party_id               CHARACTER VARYING           NOT NULL,
-    shop_id                CHARACTER VARYING           NOT NULL,
-    wtime                  TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    last_payout_created_at TIMESTAMP WITHOUT TIME ZONE,
-    calendar_id            INTEGER,
-    scheduler_id           INTEGER,
+    party_id                             CHARACTER VARYING           NOT NULL,
+    shop_id                              CHARACTER VARYING           NOT NULL,
+    wtime                                TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    last_payout_created_at               TIMESTAMP WITHOUT TIME ZONE,
+    calendar_id                          INTEGER,
+    scheduler_id                         INTEGER,
+    has_payment_institution_acc_pay_tool BOOLEAN                     NOT NULL,
     CONSTRAINT shop_meta_pkey PRIMARY KEY (party_id, shop_id)
 );

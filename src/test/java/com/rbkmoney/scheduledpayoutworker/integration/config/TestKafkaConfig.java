@@ -1,7 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.integration.config;
 
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
-import com.rbkmoney.scheduledpayoutworker.serde.impl.MachineEventSerializer;
+import com.rbkmoney.scheduledpayoutworker.serde.impl.kafka.SinkEventSerializer;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -36,7 +36,7 @@ public class TestKafkaConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         props.put(ProducerConfig.ACKS_CONFIG, "1");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, MachineEventSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, SinkEventSerializer.class);
 
         return new DefaultKafkaProducerFactory<>(props);
     }

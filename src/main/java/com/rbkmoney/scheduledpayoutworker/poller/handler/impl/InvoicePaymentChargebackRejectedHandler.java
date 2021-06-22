@@ -3,10 +3,6 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackChange;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
@@ -19,12 +15,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessingHandler {
 
-    private static final Filter PREDICATE_FILTER = new PathConditionFilter(new PathConditionRule(
-            "invoice_payment_change.payload.invoice_payment_chargeback_change.payload" +
-                    ".invoice_payment_chargeback_status_changed.status.rejected",
-            new IsNullCondition().not()));
-
     private final ChargebackDao chargebackDao;
+
+    @Override
+    public boolean accept(InvoiceChange invoiceChange) {
+        return invoiceChange.isSetInvoicePaymentChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentChargebackChange()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentChargebackChange().getPayload()
+                .isSetInvoicePaymentChargebackStatusChanged()
+                && invoiceChange.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentChargebackChange().getPayload()
+                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetRejected();
+    }
 
     @Override
     public void handle(InvoiceChange invoiceChange, MachineEvent event) {
@@ -46,9 +49,5 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
                 invoiceId, paymentId, chargebackId);
     }
 
-    @Override
-    public Filter<InvoiceChange> getFilter() {
-        return PREDICATE_FILTER;
-    }
 
 }

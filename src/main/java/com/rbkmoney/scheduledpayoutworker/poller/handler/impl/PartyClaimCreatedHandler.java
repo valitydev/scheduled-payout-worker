@@ -16,15 +16,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.rbkmoney.scheduledpayoutworker.util.DamselUtil.getClaimStatus;
+
 @Component
 @RequiredArgsConstructor
 public class PartyClaimCreatedHandler implements PartyManagementHandler {
 
     private final SchedulatorService schedulatorService;
 
-    private final Filter filter = new PathConditionFilter(new PathConditionRule(
-            "claim_status_changed.status.accepted",
-            new IsNullCondition().not()));
+    @Override
+    public boolean accept(PartyChange change) {
+        //TODO: Уточнить касательно корректности фильтра
+        return getClaimStatus(change).isSetAccepted();
+    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -58,8 +62,4 @@ public class PartyClaimCreatedHandler implements PartyManagementHandler {
         }
     }
 
-    @Override
-    public Filter<PartyChange> getFilter() {
-        return filter;
-    }
 }

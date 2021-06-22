@@ -10,11 +10,16 @@ public interface ShopMetaDao extends GenericDao {
 
     void save(ShopMeta shopMeta) throws DaoException;
 
-    void save(String partyId, String shopId) throws DaoException;
+    void save(String partyId, String shopId, boolean hasPaymentInstitutionAccPayoutTool) throws DaoException;
 
-    void save(String partyId, String shopId, int schedulerId) throws DaoException;
+    void save(String partyId, String shopId, int schedulerId, boolean hasPaymentInstitutionAccPayoutTool)
+            throws DaoException;
 
-    void save(String partyId, String shopId, int calendarId, int schedulerId) throws DaoException;
+    void save(String partyId,
+              String shopId,
+              int calendarId,
+              int schedulerId,
+              boolean hasPaymentInstitutionAccPayoutTool) throws DaoException;
 
     ShopMeta get(String partyId, String shopId) throws DaoException;
 
