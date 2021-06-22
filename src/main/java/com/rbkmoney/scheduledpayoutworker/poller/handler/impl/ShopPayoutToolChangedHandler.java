@@ -54,6 +54,7 @@ public class ShopPayoutToolChangedHandler implements PartyManagementHandler {
 
         if (hasPaymentInstitutionAccPayTool || shopMetaDao.get(partyId, shopId) != null) {
             shopMetaDao.save(partyId, shopId, hasPaymentInstitutionAccPayTool);
+            log.info("Shop have been saved, partyId={}, shopId={}", partyId, shopId);
         }
 
     }
