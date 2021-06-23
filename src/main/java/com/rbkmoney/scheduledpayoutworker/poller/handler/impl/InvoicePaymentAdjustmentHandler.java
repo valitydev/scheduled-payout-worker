@@ -57,7 +57,7 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
 
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            log.warn("Payment on adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
+            log.debug("Payment on adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
                     invoiceId, paymentId, invoicePaymentAdjustment.getId());
             return;
         }

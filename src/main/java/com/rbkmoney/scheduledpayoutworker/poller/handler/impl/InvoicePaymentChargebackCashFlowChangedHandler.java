@@ -47,7 +47,7 @@ public class InvoicePaymentChargebackCashFlowChangedHandler implements PaymentPr
 
         Chargeback chargeback = chargebackDao.get(invoiceId, paymentId, chargebackId);
         if (chargeback == null) {
-            log.warn("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
                     invoiceId, paymentId, chargebackId);
             return;
         }
