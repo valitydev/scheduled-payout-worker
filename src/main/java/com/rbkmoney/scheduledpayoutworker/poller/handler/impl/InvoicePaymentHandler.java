@@ -59,7 +59,8 @@ public class InvoicePaymentHandler implements PaymentProcessingHandler {
 
         Invoice invoice = invoiceDao.get(invoiceId);
         if (invoice == null) {
-            log.debug("Invoice on payment not found, invoiceId='{}', paymentId='{}'", invoiceId, invoicePayment.getId());
+            log.debug("Invoice on payment not found, invoiceId='{}', paymentId='{}'",
+                    invoiceId, invoicePayment.getId());
             return;
         }
 
