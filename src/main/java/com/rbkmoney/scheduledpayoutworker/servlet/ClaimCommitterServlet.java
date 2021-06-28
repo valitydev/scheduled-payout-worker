@@ -1,24 +1,20 @@
-package com.rbkmoney.payouter.endpoint;
+package com.rbkmoney.scheduledpayoutworker.servlet;
 
 import com.rbkmoney.damsel.claim_management.ClaimCommitterSrv;
 import com.rbkmoney.woody.thrift.impl.http.THServiceBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
 
 @WebServlet("/claim-committer")
+@RequiredArgsConstructor
 public class ClaimCommitterServlet extends GenericServlet {
 
     private Servlet thriftServlet;
 
     private final ClaimCommitterSrv.Iface claimCommitterService;
-
-    @Autowired
-    public ClaimCommitterServlet(ClaimCommitterSrv.Iface claimCommitterService) {
-        this.claimCommitterService = claimCommitterService;
-    }
 
     @Override
     public void init(ServletConfig config) throws ServletException {

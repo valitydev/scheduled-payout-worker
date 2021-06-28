@@ -1,4 +1,4 @@
-package com.rbkmoney.payouter.handler;
+package com.rbkmoney.scheduledpayoutworker.handler;
 
 public interface CommitHandler<T> {
 
