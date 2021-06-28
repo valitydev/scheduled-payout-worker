@@ -10,15 +10,18 @@ import com.rbkmoney.scheduledpayoutworker.poller.handler.PartyManagementHandler;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 import static com.rbkmoney.scheduledpayoutworker.util.DamselUtil.getClaimStatus;
 import static com.rbkmoney.scheduledpayoutworker.util.DamselUtil.hasPaymentInstitutionAccountPayTool;
+import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
 @Slf4j
 @Component
+@Order(HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class ShopCreatedHandler implements PartyManagementHandler {
 

@@ -2,10 +2,6 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 
 import com.rbkmoney.damsel.domain.Shop;
 import com.rbkmoney.damsel.payment_processing.*;
-import com.rbkmoney.geck.filter.Filter;
-import com.rbkmoney.geck.filter.PathConditionFilter;
-import com.rbkmoney.geck.filter.condition.IsNullCondition;
-import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PartyManagementHandler;
 import com.rbkmoney.scheduledpayoutworker.service.SchedulatorService;
@@ -26,17 +22,14 @@ public class PartyClaimCreatedHandler implements PartyManagementHandler {
 
     @Override
     public boolean accept(PartyChange change) {
-        //TODO: Уточнить касательно корректности фильтра
         return getClaimStatus(change).isSetAccepted();
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handle(PartyChange change, MachineEvent event) {
-        ClaimStatusChanged claimStatusChanged = change.getClaimStatusChanged();
         String partyId = event.getSourceId();
-        List<ClaimEffect> claimEffects = claimStatusChanged
-                .getStatus()
+        List<ClaimEffect> claimEffects = getClaimStatus(change)
                 .getAccepted()
                 .getEffects();
 
