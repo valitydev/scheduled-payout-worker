@@ -39,6 +39,7 @@ retry-policy:
   maxAttempts: 10
 cache:
   maxSize: 100
+  expireSec: 30
 service:
   partyManagement:
     url: http://hellgate:8022/v1/processing/partymgmt

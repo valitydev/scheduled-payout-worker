@@ -1,9 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.service.impl;
 
-import com.rbkmoney.damsel.domain.BusinessScheduleRef;
-import com.rbkmoney.damsel.domain.CalendarRef;
-import com.rbkmoney.damsel.domain.PaymentInstitution;
-import com.rbkmoney.damsel.domain.Shop;
+import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.payment_processing.ShopNotFound;
 import com.rbkmoney.damsel.schedule.DominantBasedSchedule;
 import com.rbkmoney.damsel.schedule.RegisterJobRequest;
 import com.rbkmoney.damsel.schedule.SchedulatorSrv;
@@ -59,7 +57,17 @@ public class SchedulatorServiceImpl implements SchedulatorService {
         deregisterJob(partyId, shopId);
 
         CalendarRef calendarRef = paymentInstitution.getCalendar();
-        //TODO: Уточнить, нужно ли регистрировать джоб, если AccPayoutTool == false
+        ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
+
+        if (shopMeta == null) {
+            log.warn("ShopMeta wasn't found, partyId='{}', shopId='{}'", partyId, shopId);
+        } else if (!shopMeta.getHasPaymentInstitutionAccPayTool()) {
+            log.warn(
+                    "ShopMeta has different from PaymentInstitutionAccountPaymentTool " +
+                            "payment tool, partyId='{}', shopId='{}'",
+                    partyId, shopId);
+        }
+
         shopMetaDao.save(partyId, shopId, calendarRef.getId(), scheduleRef.getId(), true);
         Schedule schedule = new Schedule();
         DominantBasedSchedule dominantBasedSchedule = new DominantBasedSchedule()
