@@ -5,7 +5,6 @@ import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
-import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.ShopCreatedHandler;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.ShopPayoutToolChangedHandler;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementService;
 import org.junit.jupiter.api.AfterEach;
@@ -17,8 +16,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.Map;
 
-import static com.rbkmoney.scheduledpayoutworker.integration.data.TestData.fillTBaseObject;
-import static com.rbkmoney.scheduledpayoutworker.integration.data.TestData.generateRandomStringId;
+import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.fillTBaseObject;
+import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.generateRandomStringId;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 

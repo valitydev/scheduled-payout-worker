@@ -1,4 +1,4 @@
-package com.rbkmoney.scheduledpayoutworker.integration.data;
+package com.rbkmoney.scheduledpayoutworker.util;
 
 import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.domain.*;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class TestData {
+public class TestUtil {
 
     private static MockTBaseProcessor mockTBaseProcessor;
 

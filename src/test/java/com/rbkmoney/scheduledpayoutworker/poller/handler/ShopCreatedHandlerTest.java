@@ -15,8 +15,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.Map;
 
-import static com.rbkmoney.scheduledpayoutworker.integration.data.TestData.fillTBaseObject;
-import static com.rbkmoney.scheduledpayoutworker.integration.data.TestData.generateRandomStringId;
+import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.fillTBaseObject;
+import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.generateRandomStringId;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 

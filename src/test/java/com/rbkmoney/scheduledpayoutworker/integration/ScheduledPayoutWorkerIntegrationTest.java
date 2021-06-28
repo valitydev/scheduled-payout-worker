@@ -34,7 +34,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static com.rbkmoney.scheduledpayoutworker.integration.data.TestData.*;
+import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
