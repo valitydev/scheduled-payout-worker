@@ -6,5 +6,6 @@ import lombok.Data;
 public class ScheduledJobContext {
 
     private Integer jobId;
+    private Integer calendarId;
 
 }

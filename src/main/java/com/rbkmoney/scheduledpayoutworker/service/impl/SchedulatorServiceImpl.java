@@ -79,6 +79,7 @@ public class SchedulatorServiceImpl implements SchedulatorService {
 
         ScheduledJobContext context = new ScheduledJobContext();
         context.setJobId(scheduleRef.getId());
+        context.setCalendarId(calendarRef.getId());
 
         RegisterJobRequest registerJobRequest = new RegisterJobRequest()
                 .setSchedule(schedule)

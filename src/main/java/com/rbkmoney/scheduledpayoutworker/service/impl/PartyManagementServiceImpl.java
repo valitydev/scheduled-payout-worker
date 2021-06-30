@@ -125,4 +125,22 @@ public class PartyManagementServiceImpl implements PartyManagementService {
         return paymentInstitutionRef;
     }
 
+    @Override
+    public com.rbkmoney.damsel.msgpack.Value getMetaData(String partyId, String namespace) throws NotFoundException {
+        try {
+            return partyManagementClient.getMetaData(userInfo, partyId, namespace);
+        } catch (PartyMetaNamespaceNotFound ex) {
+            return null;
+        } catch (PartyNotFound ex) {
+            throw new NotFoundException(
+                    String.format("Party not found, partyId='%s', namespace='%s'", partyId, namespace),
+                    ex
+            );
+        } catch (TException ex) {
+            throw new RuntimeException(
+                    String.format("Failed to get namespace, partyId='%s', namespace='%s'", partyId, namespace), ex
+            );
+        }
+    }
+
 }

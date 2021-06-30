@@ -10,7 +10,6 @@ public interface PayoutManagerService {
     String createPayoutByRange(
             String partyId,
             String shopId,
-            LocalDateTime fromTime,
             LocalDateTime toTime
     ) throws NotFoundException, StorageException;
 
