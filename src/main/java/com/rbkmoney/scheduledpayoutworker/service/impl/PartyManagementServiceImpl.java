@@ -1,7 +1,5 @@
 package com.rbkmoney.scheduledpayoutworker.service.impl;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.rbkmoney.damsel.domain.Contract;
 import com.rbkmoney.damsel.domain.Party;
 import com.rbkmoney.damsel.domain.PaymentInstitutionRef;
@@ -14,10 +12,8 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
 
 @Service
@@ -29,19 +25,11 @@ public class PartyManagementServiceImpl implements PartyManagementService {
 
     private final PartyManagementSrv.Iface partyManagementClient;
 
-    private final Cache<String, Party> partyCache;
-
     @Autowired
     public PartyManagementServiceImpl(
-            PartyManagementSrv.Iface partyManagementClient,
-            @Value("${cache.maxSize}") long cacheMaximumSize,
-            @Value("${cache.expireSec}") long cacheExpireSec
+            PartyManagementSrv.Iface partyManagementClient
     ) {
         this.partyManagementClient = partyManagementClient;
-        this.partyCache = Caffeine.newBuilder()
-                .expireAfterWrite(Duration.ofSeconds(cacheExpireSec))
-                .maximumSize(cacheMaximumSize)
-                .build();
     }
 
     @Override
@@ -53,27 +41,23 @@ public class PartyManagementServiceImpl implements PartyManagementService {
 
     private Party getParty(String partyId, PartyRevisionParam partyRevisionParam) throws NotFoundException {
         log.info("Trying to get party, partyId='{}', partyRevisionParam='{}'", partyId, partyRevisionParam);
-        Party party = partyCache.get(
-                partyId,
-                key -> {
-                    try {
-                        return partyManagementClient.checkout(userInfo, partyId, partyRevisionParam);
-                    } catch (PartyNotFound ex) {
-                        throw new NotFoundException(
-                                String.format("Party not found, partyId='%s', partyRevisionParam='%s'",
-                                        partyId, partyRevisionParam), ex);
-                    } catch (InvalidPartyRevision ex) {
-                        throw new NotFoundException(
-                                String.format("Invalid party revision, partyId='%s', partyRevisionParam='%s'",
-                                        partyId, partyRevisionParam), ex);
-                    } catch (TException ex) {
-                        throw new RuntimeException(
-                                String.format("Failed to get party, partyId='%s', partyRevisionParam='%s'",
-                                        partyId, partyRevisionParam), ex);
-                    }
-                });
-        log.info("Party has been found, partyId='{}', partyRevisionParam='{}'", partyId, partyRevisionParam);
-        return party;
+        try {
+            Party party = partyManagementClient.checkout(userInfo, partyId, partyRevisionParam);
+            log.info("Party has been found, partyId='{}', partyRevisionParam='{}'", partyId, partyRevisionParam);
+            return party;
+        } catch (PartyNotFound ex) {
+            throw new NotFoundException(
+                    String.format("Party not found, partyId='%s', partyRevisionParam='%s'",
+                            partyId, partyRevisionParam), ex);
+        } catch (InvalidPartyRevision ex) {
+            throw new NotFoundException(
+                    String.format("Invalid party revision, partyId='%s', partyRevisionParam='%s'",
+                            partyId, partyRevisionParam), ex);
+        } catch (TException ex) {
+            throw new RuntimeException(
+                    String.format("Failed to get party, partyId='%s', partyRevisionParam='%s'",
+                            partyId, partyRevisionParam), ex);
+        }
     }
 
     @Override

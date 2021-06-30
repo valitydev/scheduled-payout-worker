@@ -60,12 +60,8 @@ class ShopCreatedHandlerTest {
                 .getAccepted().getEffects().get(0)
                 .getShopEffect();
 
-        String shopId = effectUnit.getShopId();
-        Shop shop = effectUnit.getEffect().getCreated();
-        Party party = fillTBaseObject(new Party(), Party.class);
-        party.setShops(Map.of(shopId, shop));
-
         //prepare for hasPaymentInstitutionAccountPayTool check
+        Shop shop = effectUnit.getEffect().getCreated();
         Contract contract = fillTBaseObject(new Contract(), Contract.class);
         contract.setId(shop.getContractId());
         PayoutTool payoutTool = fillTBaseObject(new PayoutTool(), PayoutTool.class);
@@ -76,15 +72,20 @@ class ShopCreatedHandlerTest {
                 fillTBaseObject(new PaymentInstitutionAccount(), PaymentInstitutionAccount.class);
         toolInfo.setPaymentInstitutionAccount(institutionAccount);
         payoutTool.setPayoutToolInfo(toolInfo);
+        Party party = fillTBaseObject(new Party(), Party.class);
         party.setContracts(Map.of(shop.getContractId(), contract));
 
         MachineEvent event = prepareEvent();
         String partyId = event.getSourceId();
+        String shopId = effectUnit.getShopId();
 
         when(partyManagementService.getParty(partyId)).thenReturn(party);
+        when(partyManagementService.getShop(partyId, shopId)).thenReturn(shop);
         handler.handle(change, event);
         verify(partyManagementService, times(1))
                 .getParty(partyId);
+        verify(partyManagementService, times(1))
+                .getShop(partyId, shopId);
         verify(shopMetaDao, times(1)).save(partyId, shopId, true);
     }
 

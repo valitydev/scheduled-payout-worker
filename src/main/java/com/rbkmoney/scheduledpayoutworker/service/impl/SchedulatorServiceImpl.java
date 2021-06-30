@@ -1,7 +1,9 @@
 package com.rbkmoney.scheduledpayoutworker.service.impl;
 
-import com.rbkmoney.damsel.domain.*;
-import com.rbkmoney.damsel.payment_processing.ShopNotFound;
+import com.rbkmoney.damsel.domain.BusinessScheduleRef;
+import com.rbkmoney.damsel.domain.CalendarRef;
+import com.rbkmoney.damsel.domain.PaymentInstitution;
+import com.rbkmoney.damsel.domain.Shop;
 import com.rbkmoney.damsel.schedule.DominantBasedSchedule;
 import com.rbkmoney.damsel.schedule.RegisterJobRequest;
 import com.rbkmoney.damsel.schedule.SchedulatorSrv;
@@ -82,7 +84,7 @@ public class SchedulatorServiceImpl implements SchedulatorService {
                 .setSchedule(schedule)
                 .setExecutorServicePath(callbackPath)
                 .setContext(scheduledJobSerializer.writeByte(context));
-        String scheduleId = generatePayoutScheduleId(scheduleRef.getId());
+        String scheduleId = generatePayoutScheduleId(partyId, shopId, scheduleRef.getId());
         try {
             schedulatorClient.registerJob(scheduleId, registerJobRequest);
         } catch (TException e) {

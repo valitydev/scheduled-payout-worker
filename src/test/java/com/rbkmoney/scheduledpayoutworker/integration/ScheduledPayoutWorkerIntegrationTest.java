@@ -95,7 +95,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         producer.send(partyTopic, shopCreatedEvent(partyId, shopId));
 
-        verify(partyManagementClient, timeout(MOCK_TIMEOUT_MILLIS).times(1))
+        verify(partyManagementClient, timeout(MOCK_TIMEOUT_MILLIS).times(4))
                 .checkout(any(), eq(partyId), any());
         verify(dominantClient, timeout(MOCK_TIMEOUT_MILLIS).times(1))
                 .checkoutObject(any(),

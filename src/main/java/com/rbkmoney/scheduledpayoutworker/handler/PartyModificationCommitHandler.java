@@ -1,6 +1,8 @@
 package com.rbkmoney.scheduledpayoutworker.handler;
 
 import com.rbkmoney.damsel.claim_management.ScheduleModification;
+import com.rbkmoney.damsel.domain.BusinessScheduleRef;
+import com.rbkmoney.scheduledpayoutworker.service.DominantService;
 import com.rbkmoney.scheduledpayoutworker.service.SchedulatorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +14,18 @@ import org.springframework.stereotype.Component;
 public class PartyModificationCommitHandler implements CommitHandler<ScheduleModification> {
 
     private final SchedulatorService schedulatorService;
+    private final DominantService dominantService;
 
     @Override
     public void accept(String partyId, String shopId, ScheduleModification scheduleModification) {
+        log.info("Trying to accept payout schedule modification, partyId='{}', scheduleModification='{}'",
+                partyId, scheduleModification);
+        if (scheduleModification.isSetSchedule()) {
+            BusinessScheduleRef schedule = scheduleModification.getSchedule();
+            checkSchedule(schedule);
+        }
+        log.info("Payout schedule modification have been accepted, partyId='{}', scheduleModification='{}'",
+                partyId, scheduleModification);
     }
 
     @Override
@@ -28,6 +39,12 @@ public class PartyModificationCommitHandler implements CommitHandler<ScheduleMod
         }
         log.info("Schedule modification have been committed, partyId='{}', scheduleModification='{}'",
                 partyId, scheduleModification);
+    }
+
+    private void checkSchedule(BusinessScheduleRef schedule) {
+        if (schedule != null) {
+            dominantService.getBusinessSchedule(schedule);
+        }
     }
 
 }

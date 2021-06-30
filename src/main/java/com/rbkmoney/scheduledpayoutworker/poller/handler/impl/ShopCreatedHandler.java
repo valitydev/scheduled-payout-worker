@@ -49,7 +49,7 @@ public class ShopCreatedHandler implements PartyManagementHandler {
         String partyId = event.getSourceId();
 
         Party party = partyManagementService.getParty(partyId);
-        Shop shop = party.getShops().get(shopId);
+        Shop shop = partyManagementService.getShop(partyId, shopId);
 
         if (hasPaymentInstitutionAccountPayTool(party, shop.getContractId(), shop.getPayoutToolId())) {
             shopMetaDao.save(partyId, shopId, true);

@@ -25,14 +25,7 @@ public class DominantServiceImpl implements DominantService {
         return getBusinessSchedule(scheduleRef, Reference.head(new Head()));
     }
 
-    @Override
-    public BusinessSchedule getBusinessSchedule(BusinessScheduleRef scheduleRef, long domainRevision)
-            throws NotFoundException {
-        return getBusinessSchedule(scheduleRef, Reference.version(domainRevision));
-    }
-
-    @Override
-    public BusinessSchedule getBusinessSchedule(BusinessScheduleRef scheduleRef, Reference revisionReference)
+    private BusinessSchedule getBusinessSchedule(BusinessScheduleRef scheduleRef, Reference revisionReference)
             throws NotFoundException {
         log.info("Trying to get schedule, scheduleRef='{}', revisionReference='{}'", scheduleRef, revisionReference);
         try {
@@ -58,14 +51,7 @@ public class DominantServiceImpl implements DominantService {
         return getPaymentInstitution(paymentInstitutionRef, Reference.head(new Head()));
     }
 
-    @Override
-    public PaymentInstitution getPaymentInstitution(PaymentInstitutionRef paymentInstitutionRef, long domainRevision)
-            throws NotFoundException {
-        return getPaymentInstitution(paymentInstitutionRef, Reference.version(domainRevision));
-    }
-
-    @Override
-    public PaymentInstitution getPaymentInstitution(
+    private PaymentInstitution getPaymentInstitution(
             PaymentInstitutionRef paymentInstitutionRef,
             Reference revisionReference) throws NotFoundException {
         log.info("Trying to get payment institution, paymentInstitutionRef='{}', revisionReference='{}'",
@@ -94,13 +80,7 @@ public class DominantServiceImpl implements DominantService {
         return getCalendar(calendarRef, Reference.head(new Head()));
     }
 
-    @Override
-    public Calendar getCalendar(CalendarRef calendarRef, long domainRevision) throws NotFoundException {
-        return getCalendar(calendarRef, Reference.version(domainRevision));
-    }
-
-    @Override
-    public Calendar getCalendar(CalendarRef calendarRef, Reference revisionReference) throws NotFoundException {
+    private Calendar getCalendar(CalendarRef calendarRef, Reference revisionReference) throws NotFoundException {
         log.info("Trying to get calendar, calendarRef='{}', revisionReference='{}'", calendarRef, revisionReference);
         try {
             com.rbkmoney.damsel.domain.Reference reference = new com.rbkmoney.damsel.domain.Reference();
