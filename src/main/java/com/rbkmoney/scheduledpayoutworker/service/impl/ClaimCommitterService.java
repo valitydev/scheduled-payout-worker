@@ -16,7 +16,20 @@ public class ClaimCommitterService implements ClaimCommitterSrv.Iface {
 
     @Override
     public void accept(String partyId, Claim receivedClaim) throws PartyNotFound, InvalidChangeset, TException {
-        
+        for (ModificationUnit modificationUnit : receivedClaim.getChangeset()) {
+            Modification modification = modificationUnit.getModification();
+            if (modification.isSetPartyModification()) {
+                PartyModification partyModification = modification.getPartyModification();
+                if (partyModification.isSetShopModification()) {
+                    ShopModificationUnit shopModificationUnit = partyModification.getShopModification();
+                    String shopId = shopModificationUnit.getId();
+                    ShopModification shopModification = shopModificationUnit.getModification();
+                    if (shopModification.isSetPayoutScheduleModification()) {
+                        pmCommitHandler.accept(partyId, shopId, shopModification.getPayoutScheduleModification());
+                    }
+                }
+            }
+        }
     }
 
     @Override
