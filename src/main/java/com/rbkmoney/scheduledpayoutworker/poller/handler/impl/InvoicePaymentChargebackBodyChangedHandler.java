@@ -41,15 +41,15 @@ public class InvoicePaymentChargebackBodyChangedHandler implements PaymentProces
                 .getInvoicePaymentChargebackChange();
         String chargebackId = invoicePaymentChargebackChange.getId();
 
-        InvoicePaymentChargebackBodyChanged invoicePaymentChargebackBodyChanged =
-                invoicePaymentChargebackChange.getPayload().getInvoicePaymentChargebackBodyChanged();
-
         Chargeback chargeback = chargebackDao.get(invoiceId, paymentId, chargebackId);
         if (chargeback == null) {
             log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
                     invoiceId, paymentId, chargebackId);
             return;
         }
+
+        InvoicePaymentChargebackBodyChanged invoicePaymentChargebackBodyChanged =
+                invoicePaymentChargebackChange.getPayload().getInvoicePaymentChargebackBodyChanged();
 
         Cash body = invoicePaymentChargebackBodyChanged.getBody();
         chargeback.setAmount(body.getAmount());

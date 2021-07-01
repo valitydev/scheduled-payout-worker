@@ -3,7 +3,6 @@ package com.rbkmoney.scheduledpayoutworker.service.impl;
 import com.rbkmoney.damsel.payment_processing.PartyChange;
 import com.rbkmoney.damsel.payment_processing.PartyEventData;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.exception.StorageException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PartyManagementHandler;
@@ -29,29 +28,12 @@ public class PartyManagementEventServiceImpl implements PartyManagementEventServ
         log.debug("Trying to save eventId, eventId={}, eventCreatedAt={}", eventId, createdAt);
         if (eventPayload.isSetChanges()) {
             for (PartyChange change : eventPayload.getChanges()) {
-                PartyManagementHandler handler = getHandler(change);
-                if (handler != null) {
-                    log.debug("Trying to handle change, change='{}', event='{}'", change, event);
-                    try {
-                        handler.handle(change, event);
-                        log.info("Change have been handled, eventId='{}', change='{}'", eventId, change);
-                    } catch (DaoException ex) {
-                        throw new StorageException(String.format("Failed to save event, eventId='%d', change='%s'",
-                                eventId, change), ex);
-                    }
-                }
+                handlers.stream()
+                        .filter(handler -> handler.accept(change))
+                        .forEach(handler -> handler.handle(change, event));
             }
             log.info("Event id have been saved, eventId={}, eventCreatedAt={}", eventId, createdAt);
         }
-    }
-
-    private PartyManagementHandler getHandler(PartyChange change) {
-        for (PartyManagementHandler handler : handlers) {
-            if (handler.accept(change)) {
-                return handler;
-            }
-        }
-        return null;
     }
 
 }

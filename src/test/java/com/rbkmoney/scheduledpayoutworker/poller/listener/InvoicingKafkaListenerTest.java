@@ -1,10 +1,11 @@
-package com.rbkmoney.scheduledpayoutworker.kafka;
+package com.rbkmoney.scheduledpayoutworker.poller.listener;
 
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
+import com.rbkmoney.machinegun.msgpack.Value;
 import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
 import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
@@ -23,7 +24,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
-public class InvoicingListenerTest {
+public class InvoicingKafkaListenerTest {
 
     @Mock
     private PaymentProcessingEventService paymentProcessingEventService;
@@ -51,10 +52,10 @@ public class InvoicingListenerTest {
     public void listenNonInvoiceChanges() {
 
         MachineEvent message = new MachineEvent();
-        Event event = new Event();
+        message.setData(new Value());
+        message.getData().setBin(new byte[0]);
         EventPayload payload = new EventPayload();
         payload.setCustomerChanges(List.of());
-        event.setPayload(payload);
         Mockito.when(parser.convert(message)).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
@@ -71,6 +72,8 @@ public class InvoicingListenerTest {
     @Test
     public void listenEmptyException() {
         MachineEvent message = new MachineEvent();
+        message.setData(new Value());
+        message.getData().setBin(new byte[0]);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);

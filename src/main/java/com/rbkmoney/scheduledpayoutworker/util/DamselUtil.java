@@ -37,6 +37,10 @@ public class DamselUtil {
                         Collectors.summingLong(cashFlow -> cashFlow.getVolume().getAmount())));
     }
 
+    private DamselUtil() {
+        throw new UnsupportedOperationException("Unable to instantiate utility class!");
+    }
+
     public static boolean hasPaymentInstitutionAccountPayTool(Party party,
                                                               String shopContractId,
                                                               String shopPayoutToolId) {

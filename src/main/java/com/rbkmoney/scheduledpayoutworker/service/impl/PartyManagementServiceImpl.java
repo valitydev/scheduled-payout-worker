@@ -43,8 +43,7 @@ public class PartyManagementServiceImpl implements PartyManagementService {
         log.info("Trying to get party, partyId='{}', partyRevisionParam='{}'", partyId, partyRevisionParam);
         try {
             Party party = partyManagementClient.checkout(userInfo, partyId, partyRevisionParam);
-            log.info("Party has been found, partyId='{}', partyRevisionParam='{}'", partyId,
-                    partyRevisionParam);
+            log.info("Party has been found, partyId='{}', partyRevisionParam='{}'", partyId, partyRevisionParam);
             return party;
         } catch (PartyNotFound ex) {
             throw new NotFoundException(
@@ -63,9 +62,6 @@ public class PartyManagementServiceImpl implements PartyManagementService {
 
     @Override
     public Shop getShop(String partyId, String shopId) throws NotFoundException {
-        log.info("Trying to get shop, partyId='{}', shopId='{}'",
-                partyId, shopId);
-
         PartyRevisionParam partyRevisionParam = PartyRevisionParam
                 .timestamp(TypeUtil.temporalToString(Instant.now()));
 

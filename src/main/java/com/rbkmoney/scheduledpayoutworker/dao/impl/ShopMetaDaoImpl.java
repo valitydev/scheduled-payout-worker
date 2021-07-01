@@ -1,8 +1,8 @@
 package com.rbkmoney.scheduledpayoutworker.dao.impl;
 
 import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
-import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.dao.mapper.RecordRowMapper;
+import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import org.jooq.Query;
 import org.springframework.beans.factory.annotation.Autowired;

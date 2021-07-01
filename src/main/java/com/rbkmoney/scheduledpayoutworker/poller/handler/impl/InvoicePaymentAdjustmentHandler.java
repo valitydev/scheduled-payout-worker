@@ -50,11 +50,6 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
         InvoicePaymentAdjustment invoicePaymentAdjustment = invoicePaymentAdjustmentChange
                 .getPayload().getInvoicePaymentAdjustmentCreated().getAdjustment();
 
-        Adjustment adjustment = new Adjustment();
-        adjustment.setEventId(eventId);
-        adjustment.setInvoiceId(invoiceId);
-        adjustment.setPaymentId(paymentId);
-
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
             log.debug("Payment on adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
@@ -62,9 +57,12 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
             return;
         }
 
+        Adjustment adjustment = new Adjustment();
+        adjustment.setEventId(eventId);
+        adjustment.setInvoiceId(invoiceId);
+        adjustment.setPaymentId(paymentId);
         adjustment.setPartyId(payment.getPartyId());
         adjustment.setShopId(payment.getShopId());
-
         adjustment.setAdjustmentId(invoicePaymentAdjustment.getId());
         adjustment.setStatus(AdjustmentStatus.PENDING);
         adjustment.setCreatedAt(TypeUtil.stringToLocalDateTime(invoicePaymentAdjustment.getCreatedAt()));

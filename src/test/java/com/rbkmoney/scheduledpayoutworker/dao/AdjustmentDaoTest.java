@@ -1,7 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.dao;
 
 import com.rbkmoney.payouter.domain.tables.pojos.Adjustment;
-import com.rbkmoney.scheduledpayoutworker.AbstractIntegrationTest;
+import com.rbkmoney.scheduledpayoutworker.config.AbstractPostgreTestContainerConfig;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,13 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AdjustmentDaoTest extends AbstractIntegrationTest {
+class AdjustmentDaoTest extends AbstractPostgreTestContainerConfig {
 
     @Autowired
     AdjustmentDao adjustmentDao;
 
     @Test
-    public void testSaveAndGet() throws DaoException {
+    void testSaveAndGet() throws DaoException {
         Adjustment adjustment = random(Adjustment.class, "payoutId");
         adjustmentDao.save(adjustment);
         Adjustment secondAdjustment = new Adjustment(adjustment);
@@ -27,7 +27,7 @@ public class AdjustmentDaoTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testSaveOnlyNonNullValues() throws DaoException {
+    void testSaveOnlyNonNullValues() throws DaoException {
         Adjustment adjustment = random(Adjustment.class, "payoutId");
         adjustmentDao.save(adjustment);
         assertEquals(

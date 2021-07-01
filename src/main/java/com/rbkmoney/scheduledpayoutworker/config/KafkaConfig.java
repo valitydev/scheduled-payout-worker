@@ -17,6 +17,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.BatchErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 
@@ -56,7 +57,6 @@ public class KafkaConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SinkEventDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        props.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
@@ -90,7 +90,6 @@ public class KafkaConfig {
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> invContainerFactory(
             ConsumerFactory<String, MachineEvent> consumerFactory) {
         var factory = createGeneralKafkaListenerFactory(consumerFactory);
-
         factory.setBatchListener(true);
         factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
         factory.setConcurrency(invoiceConcurrency);
@@ -107,13 +106,12 @@ public class KafkaConfig {
         return factory;
     }
 
-    private static ConcurrentKafkaListenerContainerFactory<String, MachineEvent> createGeneralKafkaListenerFactory(
+    private ConcurrentKafkaListenerContainerFactory<String, MachineEvent> createGeneralKafkaListenerFactory(
             ConsumerFactory<String, MachineEvent> consumerFactory) {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, MachineEvent>();
         factory.setConsumerFactory(consumerFactory);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
     }
-
 
 }

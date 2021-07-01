@@ -1,9 +1,8 @@
 package com.rbkmoney.scheduledpayoutworker.exception;
 
 public class ParseException extends RuntimeException {
-    
+
     public ParseException() {
-        super();
     }
 
     public ParseException(String message) {
@@ -18,7 +17,7 @@ public class ParseException extends RuntimeException {
         super(cause);
     }
 
-    protected ParseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public ParseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }
