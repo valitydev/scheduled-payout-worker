@@ -3,7 +3,6 @@ package com.rbkmoney.scheduledpayoutworker.service.impl;
 import com.rbkmoney.damsel.domain.Cash;
 import com.rbkmoney.damsel.domain.CurrencyRef;
 import com.rbkmoney.damsel.domain.Shop;
-import com.rbkmoney.damsel.msgpack.Value;
 import com.rbkmoney.payout.manager.PayoutManagementSrv;
 import com.rbkmoney.payout.manager.PayoutParams;
 import com.rbkmoney.payout.manager.ShopParams;
@@ -38,11 +37,11 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
 
     @Override
     public String createPayoutByRange(String partyId, String shopId, LocalDateTime toTime)
-            throws NotFoundException, StorageException {
+            throws NotFoundException, StorageException, TException {
 
         Shop shop = partyManagementService.getShop(partyId, shopId);
 
-        if (shop.getBlocking().isSetBlocked() || isBlockedForPayouts(partyId)) {
+        if (shop.getBlocking().isSetBlocked()) {
             throw new InvalidStateException(
                     String.format("Party or shop blocked for payouts, partyId='%s', shopId='%s'", partyId, shopId)
             );
@@ -58,12 +57,7 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
         ShopParams shopParams = new ShopParams().setPartyId(partyId).setShopId(shopId);
         PayoutParams payoutParams = new PayoutParams(shopParams, cash);
 
-        try {
-            payoutManagerClient.createPayout(payoutParams);
-        } catch (TException e) {
-            e.printStackTrace();
-        }
-
+        payoutManagerClient.createPayout(payoutParams);
         return payoutId;
     }
 
@@ -93,13 +87,6 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
         } catch (DaoException ex) {
             throw new StorageException(ex);
         }
-    }
-
-    //legacy
-    //TODO: Still required?
-    private boolean isBlockedForPayouts(String partyId) {
-        Value metaDataValue = partyManagementService.getMetaData(partyId, "payout_blocking");
-        return metaDataValue != null && metaDataValue.isSetB() && metaDataValue.getB();
     }
 
 }

@@ -10,7 +10,6 @@ import com.rbkmoney.scheduledpayoutworker.exception.StorageException;
 import com.rbkmoney.scheduledpayoutworker.model.ScheduledJobContext;
 import com.rbkmoney.scheduledpayoutworker.serde.impl.ScheduledJobSerializer;
 import com.rbkmoney.scheduledpayoutworker.service.PayoutManagerService;
-import com.rbkmoney.woody.api.flow.WFlow;
 import com.rbkmoney.woody.api.flow.error.WRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static com.rbkmoney.geck.common.util.TypeUtil.toLocalDateTime;
 
@@ -32,18 +30,22 @@ public class SchedulatorJobExecutorServiceImpl implements ScheduledJobExecutorSr
 
     private final ScheduledJobSerializer scheduleJobSerializer;
     private final ShopMetaDao shopMetaDao;
-    private final WFlow flow = new WFlow();
     private final PayoutManagerService payoutManagerService;
 
     @Override
     public ContextValidationResponse validateExecutionContext(ByteBuffer byteBuffer) throws TException {
         ScheduledJobContext scheduledJobContext = scheduleJobSerializer.read(byteBuffer.array());
+
         if (scheduledJobContext.getJobId() == null) {
             throw new IllegalArgumentException("Job id cannot be null!");
         }
 
-        if (scheduledJobContext.getCalendarId() == null) {
-            throw new IllegalArgumentException("Calendar id cannot be null!");
+        if (scheduledJobContext.getPartyId() == null) {
+            throw new IllegalArgumentException("Party id cannot be null!");
+        }
+
+        if (scheduledJobContext.getShopId() == null) {
+            throw new IllegalArgumentException("Shop id cannot be null!");
         }
 
         ContextValidationResponse contextValidationResponse = new ContextValidationResponse();
@@ -61,51 +63,43 @@ public class SchedulatorJobExecutorServiceImpl implements ScheduledJobExecutorSr
                 scheduleJobSerializer.read(executeJobRequest.getServiceExecutionContext());
         log.info("Job context: {}", scheduledJobContext);
         try {
-            List<ShopMeta> shopMetas = shopMetaDao
-                    .getByCalendarAndSchedulerId(scheduledJobContext.getCalendarId(), scheduledJobContext.getJobId());
-            for (ShopMeta shopMeta : shopMetas) { //TODO: Check, if more then one is possible
-                String partyId = shopMeta.getPartyId();
-                String shopId = shopMeta.getShopId();
-                log.info(
-                        "Trying to create payout for shop, partyId='{}', shopId='{}', scheduledJobContext='{}'",
-                        partyId, shopId, scheduledJobContext);
-                try {
-                    try {
-                        LocalDateTime toTime = toLocalDateTime(Instant.now()); //TODO: Check correct time
-                        //TODO: Check if fork really has sense
-                        String payoutId = flow.createServiceFork(
-                                () -> payoutManagerService.createPayoutByRange(
-                                        partyId,
-                                        shopId,
-                                        toTime
-                                )
-                        ).call();
+            ShopMeta shopMeta = shopMetaDao.get(scheduledJobContext.getPartyId(), scheduledJobContext.getShopId());
+            String partyId = shopMeta.getPartyId();
+            String shopId = shopMeta.getShopId();
+            log.info(
+                    "Trying to create payout for shop, partyId='{}', shopId='{}', scheduledJobContext='{}'",
+                    partyId, shopId, scheduledJobContext);
 
-                        log.info(
-                                "Payout for shop have been successfully created, payoutId='{}' partyId='{}'," +
-                                        " shopId='{}', scheduledJobContext='{}'",
-                                payoutId, partyId, shopId, scheduledJobContext);
-                    } catch (NotFoundException | InvalidStateException ex) {
-                        log.warn(
-                                "Failed to generate payout, partyId='{}', shopId='{}', scheduledJobContext='{}'," +
-                                        " reason='{}'",
-                                partyId, shopId, scheduledJobContext, ex);
-                    }
-                } catch (StorageException | WRuntimeException | NestedRuntimeException ex) {
-                    throw new JobExecutionException(String.format("Job execution failed (partyId='%s', shopId='%s', " +
-                                    "scheduledJobContext='%s'), retry",
-                            partyId, shopId, scheduledJobContext), ex);
-                } catch (Exception ex) {
-                    throw new JobExecutionException(
-                            String.format("Job execution failed (partyId='%s', shopId='%s', " +
-                                            "scheduledJobContext='%s'), stop triggers",
-                                    partyId, shopId, scheduledJobContext), ex);
-                }
+            try {
+                LocalDateTime toTime = toLocalDateTime(Instant.now()); //TODO: Check correct time
+
+                String payoutId = payoutManagerService.createPayoutByRange(
+                        partyId,
+                        shopId,
+                        toTime
+                );
+                log.info(
+                        "Payout for shop have been successfully created, payoutId='{}' partyId='{}'," +
+                                " shopId='{}', scheduledJobContext='{}'",
+                        payoutId, partyId, shopId, scheduledJobContext);
+            } catch (NotFoundException | InvalidStateException ex) {
+                log.warn(
+                        "Failed to generate payout, partyId='{}', shopId='{}', scheduledJobContext='{}'," +
+                                " reason='{}'",
+                        partyId, shopId, scheduledJobContext, ex);
+
+            } catch (StorageException | WRuntimeException | NestedRuntimeException ex) {
+                throw new JobExecutionException(String.format("Job execution failed (partyId='%s', shopId='%s', " +
+                                "scheduledJobContext='%s'), retry",
+                        partyId, shopId, scheduledJobContext), ex);
             }
-            return ByteBuffer.wrap(scheduleJobSerializer.writeByte(scheduledJobContext));
         } catch (Exception ex) {
-            log.error("Error was received when performing a scheduled task", ex);
-            throw new IllegalStateException(String.format("Execute job '%d' failed", scheduledJobContext.getJobId()));
+            throw new JobExecutionException(
+                    String.format("Job execution failed (" +
+                                    "scheduledJobContext='%s')",
+                            scheduledJobContext), ex);
         }
+        return ByteBuffer.wrap(scheduleJobSerializer.writeByte(scheduledJobContext));
+
     }
 }

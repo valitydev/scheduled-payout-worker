@@ -5,7 +5,8 @@ import lombok.Data;
 @Data
 public class ScheduledJobContext {
 
-    private Integer jobId;
-    private Integer calendarId;
+    private String jobId;
+    private String partyId;
+    private String shopId;
 
 }
