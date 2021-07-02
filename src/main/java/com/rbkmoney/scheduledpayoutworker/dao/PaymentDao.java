@@ -19,4 +19,6 @@ public interface PaymentDao extends GenericDao {
 
     void markAsCancelled(Long eventId, String invoiceId, String paymentId) throws DaoException;
 
+    int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException;
+
 }

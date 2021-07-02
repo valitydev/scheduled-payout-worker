@@ -3,6 +3,7 @@ package com.rbkmoney.scheduledpayoutworker.service.impl;
 import com.rbkmoney.damsel.domain.Cash;
 import com.rbkmoney.damsel.domain.CurrencyRef;
 import com.rbkmoney.damsel.domain.Shop;
+import com.rbkmoney.payout.manager.Payout;
 import com.rbkmoney.payout.manager.PayoutManagementSrv;
 import com.rbkmoney.payout.manager.PayoutParams;
 import com.rbkmoney.payout.manager.ShopParams;
@@ -47,18 +48,20 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
             );
         }
 
-        String payoutId = UUID.randomUUID().toString();
-        includeUnpaid(payoutId, partyId, shopId, toTime);
+        //Temporary payoutId, before the final one from payoutManager is received
+        String tempPayoutId = UUID.randomUUID().toString();
+        includeUnpaid(tempPayoutId, partyId, shopId, toTime);
 
-        long amount = calculateAvailableAmount(payoutId);
+        long amount = calculateAvailableAmount(tempPayoutId);
 
         CurrencyRef currency = shop.getAccount().getCurrency();
         Cash cash = new Cash().setAmount(amount).setCurrency(currency);
         ShopParams shopParams = new ShopParams().setPartyId(partyId).setShopId(shopId);
         PayoutParams payoutParams = new PayoutParams(shopParams, cash);
 
-        payoutManagerClient.createPayout(payoutParams);
-        return payoutId;
+        Payout payout = payoutManagerClient.createPayout(payoutParams);
+        updatePayoutId(tempPayoutId, payout.getPayoutId());
+        return payout.getPayoutId();
     }
 
     private void includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime toTime)
@@ -86,6 +89,20 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
             return amount;
         } catch (DaoException ex) {
             throw new StorageException(ex);
+        }
+    }
+
+    private void updatePayoutId(String oldPayoutId, String newPayoutId) {
+        log.info("Trying to update payoutId from '{}' to '{}'", oldPayoutId, newPayoutId);
+        try {
+            paymentDao.updatePayoutId(oldPayoutId, newPayoutId);
+            refundDao.updatePayoutId(oldPayoutId, newPayoutId);
+            adjustmentDao.updatePayoutId(oldPayoutId, newPayoutId);
+            chargebackDao.updatePayoutId(oldPayoutId, newPayoutId);
+            log.info("Successfully updated payoutId from '{}' to '{}'", oldPayoutId, newPayoutId);
+        } catch (DaoException ex) {
+            throw new StorageException(
+                    String.format("Failed to update payoutId from '%s' to '%s'", oldPayoutId, newPayoutId), ex);
         }
     }
 

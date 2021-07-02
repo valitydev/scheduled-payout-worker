@@ -6,6 +6,9 @@ import com.rbkmoney.damsel.domain_config.VersionedObject;
 import com.rbkmoney.damsel.payment_processing.PartyManagementSrv;
 import com.rbkmoney.damsel.schedule.*;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
+import com.rbkmoney.payout.manager.Payout;
+import com.rbkmoney.payout.manager.PayoutManagementSrv;
+import com.rbkmoney.payout.manager.PayoutParams;
 import com.rbkmoney.payouter.domain.tables.Invoice;
 import com.rbkmoney.payouter.domain.tables.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.config.AbstractKafkaTestContainerConfig;
@@ -14,10 +17,13 @@ import com.rbkmoney.scheduledpayoutworker.integration.config.TestKafkaConfig;
 import com.rbkmoney.woody.thrift.impl.http.THSpawnClientBuilder;
 import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +62,9 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
     @MockBean
     public SchedulatorSrv.Iface schedulatorClient;
 
+    @MockBean
+    public PayoutManagementSrv.Iface payoutManagerClient;
+
     @Autowired
     private KafkaTemplate<String, SinkEvent> producer;
 
@@ -76,6 +85,25 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
     @Captor
     private ArgumentCaptor<RegisterJobRequest> jobRequestCaptor;
+
+    @Captor
+    private ArgumentCaptor<PayoutParams> payoutParamsCaptor;
+
+    private AutoCloseable mocks;
+
+    private Object[] preparedMocks;
+
+    @BeforeEach
+    public void init() {
+        mocks = MockitoAnnotations.openMocks(this);
+        preparedMocks = new Object[] {partyManagementClient, dominantClient, schedulatorClient, payoutManagerClient};
+    }
+
+    @AfterEach
+    public void clean() throws Exception {
+        verifyNoMoreInteractions(preparedMocks);
+        mocks.close();
+    }
 
     @Test
     @SneakyThrows
@@ -172,11 +200,27 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         assertTrue(validationResponse.getResponseStatus().isSetSuccess());
 
+        when(payoutManagerClient.createPayout(any())).thenReturn(fillTBaseObject(new Payout(), Payout.class));
+
         ExecuteJobRequest executeJobRequest = fillTBaseObject(new ExecuteJobRequest(), ExecuteJobRequest.class);
         executeJobRequest.setServiceExecutionContext(registerJobRequest.bufferForContext());
+        ScheduledJobContext context = fillTBaseObject(new ScheduledJobContext(), ScheduledJobContext.class);
+        context.setNextCronTime("2011-12-03T10:15:30Z");
+        executeJobRequest.setScheduledJobContext(context);
         assertEquals(registerJobRequest.bufferForContext(), client.executeJob(executeJobRequest));
 
-        //TODO: expand test after JD-371 implementation
+        verify(partyManagementClient, times(5)).checkout(any(), eq(partyId), any());
+        verify(payoutManagerClient, times(1)).createPayout(payoutParamsCaptor.capture());
+
+        PayoutParams payoutParams = payoutParamsCaptor.getValue();
+
+        assertAll(
+                () -> assertEquals(party.getShops().get(shopId).getAccount().getCurrency(),
+                        payoutParams.getCash().getCurrency()),
+                () -> assertEquals(0L, payoutParams.getCash().getAmount()),
+                () -> assertEquals(partyId, payoutParams.getShopParams().getPartyId()),
+                () -> assertEquals(shopId, payoutParams.getShopParams().getShopId())
+        );
 
     }
 

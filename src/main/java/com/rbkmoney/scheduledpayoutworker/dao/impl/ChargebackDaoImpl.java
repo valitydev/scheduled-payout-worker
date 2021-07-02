@@ -110,4 +110,12 @@ public class ChargebackDaoImpl extends AbstractGenericDao implements ChargebackD
         return execute(query);
     }
 
+    @Override
+    public int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException {
+        Query query = getDslContext().update(CHARGEBACK)
+                .set(CHARGEBACK.PAYOUT_ID, newPayoutId)
+                .where(CHARGEBACK.PAYOUT_ID.eq(oldPayoutId));
+        return execute(query);
+    }
+
 }

@@ -22,4 +22,6 @@ public interface ChargebackDao extends GenericDao {
 
     int excludeFromPayout(String payoutId) throws DaoException;
 
+    int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException;
+
 }

@@ -95,4 +95,12 @@ public class AdjustmentDaoImpl extends AbstractGenericDao implements AdjustmentD
                 .where(ADJUSTMENT.PAYOUT_ID.eq(payoutId));
         return execute(query);
     }
+
+    @Override
+    public int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException {
+        Query query = getDslContext().update(ADJUSTMENT)
+                .set(ADJUSTMENT.PAYOUT_ID, newPayoutId)
+                .where(ADJUSTMENT.PAYOUT_ID.eq(oldPayoutId));
+        return execute(query);
+    }
 }

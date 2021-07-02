@@ -1,10 +1,8 @@
 package com.rbkmoney.scheduledpayoutworker.service;
 
-import com.rbkmoney.damsel.domain.Contract;
 import com.rbkmoney.damsel.domain.Party;
 import com.rbkmoney.damsel.domain.PaymentInstitutionRef;
 import com.rbkmoney.damsel.domain.Shop;
-import com.rbkmoney.damsel.msgpack.Value;
 import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 
 public interface PartyManagementService {
@@ -13,10 +11,6 @@ public interface PartyManagementService {
 
     Shop getShop(String partyId, String shopId) throws NotFoundException;
 
-    Contract getContract(String partyId, String contractId) throws NotFoundException;
-
     PaymentInstitutionRef getPaymentInstitutionRef(String partyId, String contractId) throws NotFoundException;
-
-    Value getMetaData(String partyId, String namespace) throws NotFoundException;
 
 }

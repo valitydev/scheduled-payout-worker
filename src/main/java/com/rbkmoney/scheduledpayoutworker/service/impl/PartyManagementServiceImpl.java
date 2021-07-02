@@ -77,13 +77,6 @@ public class PartyManagementServiceImpl implements PartyManagementService {
         return shop;
     }
 
-    @Override
-    public Contract getContract(String partyId, String contractId) throws NotFoundException {
-        PartyRevisionParam partyRevisionParam = PartyRevisionParam
-                .timestamp(TypeUtil.temporalToString(Instant.now()));
-        return getContract(partyId, contractId, partyRevisionParam);
-    }
-
     private Contract getContract(String partyId, String contractId, PartyRevisionParam partyRevisionParam)
             throws NotFoundException {
         log.info("Trying to get contract, partyId='{}', contractId='{}', partyRevisionParam='{}'",
@@ -123,24 +116,6 @@ public class PartyManagementServiceImpl implements PartyManagementService {
         log.info("PaymentInstitutionRef has been found, partyId='{}', contractId='{}', paymentInstitutionRef='{}', " +
                 "partyRevisionParam='{}'", partyId, contractId, paymentInstitutionRef, revisionParam);
         return paymentInstitutionRef;
-    }
-
-    @Override
-    public com.rbkmoney.damsel.msgpack.Value getMetaData(String partyId, String namespace) throws NotFoundException {
-        try {
-            return partyManagementClient.getMetaData(userInfo, partyId, namespace);
-        } catch (PartyMetaNamespaceNotFound ex) {
-            return null;
-        } catch (PartyNotFound ex) {
-            throw new NotFoundException(
-                    String.format("Party not found, partyId='%s', namespace='%s'", partyId, namespace),
-                    ex
-            );
-        } catch (TException ex) {
-            throw new RuntimeException(
-                    String.format("Failed to get namespace, partyId='%s', namespace='%s'", partyId, namespace), ex
-            );
-        }
     }
 
 }

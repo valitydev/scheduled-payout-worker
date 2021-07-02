@@ -18,10 +18,9 @@ import org.springframework.core.NestedRuntimeException;
 import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
-import static com.rbkmoney.geck.common.util.TypeUtil.toLocalDateTime;
+import static com.rbkmoney.geck.common.util.TypeUtil.stringToLocalDateTime;
 
 @Slf4j
 @Service
@@ -71,7 +70,8 @@ public class SchedulatorJobExecutorServiceImpl implements ScheduledJobExecutorSr
                     partyId, shopId, scheduledJobContext);
 
             try {
-                LocalDateTime toTime = toLocalDateTime(Instant.now()); //TODO: Check correct time
+                LocalDateTime toTime = stringToLocalDateTime(
+                        executeJobRequest.getScheduledJobContext().getNextCronTime());
 
                 String payoutId = payoutManagerService.createPayoutByRange(
                         partyId,

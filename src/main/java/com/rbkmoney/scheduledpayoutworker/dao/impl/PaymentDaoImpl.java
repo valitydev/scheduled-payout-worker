@@ -94,4 +94,12 @@ public class PaymentDaoImpl extends AbstractGenericDao implements PaymentDao {
         executeOne(query);
     }
 
+    @Override
+    public int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException {
+        Query query = getDslContext().update(PAYMENT)
+                .set(PAYMENT.PAYOUT_ID, newPayoutId)
+                .where(PAYMENT.PAYOUT_ID.eq(oldPayoutId));
+        return execute(query);
+    }
+
 }

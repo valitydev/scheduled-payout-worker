@@ -64,6 +64,17 @@ public class TestUtil {
         shop.setContractId(contractId);
         shop.setPayoutToolId(payoutTool.getId());
 
+        Blocking blocking = fillTBaseObject(new Blocking(), Blocking.class);
+        Unblocked unblocked = fillTBaseObject(new Unblocked(), Unblocked.class);
+        blocking.setUnblocked(unblocked);
+        shop.setBlocking(blocking);
+
+        ShopAccount account = fillTBaseObject(new ShopAccount(), ShopAccount.class);
+        account.setCurrency(fillTBaseObject(new CurrencyRef(), CurrencyRef.class));
+        shop.setAccount(account);
+
+
+
         party.setShops(Map.of(shopId, shop));
         party.setContracts(Map.of(contractId, contract));
         return party;
