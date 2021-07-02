@@ -31,7 +31,7 @@ public class InvoicePaymentCaptureStartedHandler implements PaymentProcessingHan
         String paymentId = invoiceChange.getInvoicePaymentChange().getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            log.warn("Invoice payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
+            log.debug("Invoice payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
             return;
         }
         InvoicePaymentCaptureStarted invoicePaymentCaptureStarted = invoiceChange.getInvoicePaymentChange()

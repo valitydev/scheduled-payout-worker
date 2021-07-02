@@ -67,7 +67,7 @@ public class InvoicePaymentRefundHandler implements PaymentProcessingHandler {
         Payment payment = paymentDao.get(invoiceId, paymentId);
 
         if (payment == null) {
-            log.warn("Payment on refund not found, invoiceId='{}', paymentId='{}', refundId='{}'",
+            log.debug("Payment on refund not found, invoiceId='{}', paymentId='{}', refundId='{}'",
                     invoiceId, paymentId, invoicePaymentRefund.getId());
             return;
         }
