@@ -17,7 +17,6 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.BatchErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 
@@ -29,6 +28,8 @@ import java.util.Map;
 @EnableConfigurationProperties(KafkaSslProperties.class)
 public class KafkaConfig {
 
+    @Value("${retry-policy.maxAttempts}")
+    int maxAttempts;
     @Value("${kafka.consumer.auto-offset-reset}")
     private String autoOffsetReset;
     @Value("${kafka.consumer.enable-auto-commit}")
@@ -39,7 +40,6 @@ public class KafkaConfig {
     private String clientId;
     @Value("${kafka.consumer.max-poll-records}")
     private int maxPollRecords;
-
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
     @Value("${kafka.topics.invoice.concurrency}")
@@ -47,11 +47,7 @@ public class KafkaConfig {
     @Value("${kafka.topics.party-management.concurrency}")
     private int partyConcurrency;
 
-    @Value("${retry-policy.maxAttempts}")
-    int maxAttempts;
-
-    @Bean
-    public Map<String, Object> consumerConfigs(KafkaSslProperties kafkaSslProperties) {
+    private Map<String, Object> consumerConfigs(KafkaSslProperties kafkaSslProperties) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -82,14 +78,23 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, MachineEvent> consumerFactory(KafkaSslProperties kafkaSslProperties) {
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs(kafkaSslProperties));
+    public ConsumerFactory<String, MachineEvent> invoiceConsumerFactory(KafkaSslProperties kafkaSslProperties) {
+        Map<String, Object> config = consumerConfigs(kafkaSslProperties);
+        config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId + "-invoice");
+        return new DefaultKafkaConsumerFactory<>(config);
+    }
+
+    @Bean
+    public ConsumerFactory<String, MachineEvent> pmConsumerFactory(KafkaSslProperties kafkaSslProperties) {
+        Map<String, Object> config = consumerConfigs(kafkaSslProperties);
+        config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId + "-pm");
+        return new DefaultKafkaConsumerFactory<>(config);
     }
 
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> invContainerFactory(
-            ConsumerFactory<String, MachineEvent> consumerFactory) {
-        var factory = createGeneralKafkaListenerFactory(consumerFactory);
+            ConsumerFactory<String, MachineEvent> invoiceConsumerFactory) {
+        var factory = createGeneralKafkaListenerFactory(invoiceConsumerFactory);
         factory.setBatchListener(true);
         factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
         factory.setConcurrency(invoiceConcurrency);
@@ -98,8 +103,8 @@ public class KafkaConfig {
 
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> pmContainerFactory(
-            ConsumerFactory<String, MachineEvent> consumerFactory) {
-        var factory = createGeneralKafkaListenerFactory(consumerFactory);
+            ConsumerFactory<String, MachineEvent> pmConsumerFactory) {
+        var factory = createGeneralKafkaListenerFactory(pmConsumerFactory);
         factory.setBatchListener(true);
         factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
         factory.setConcurrency(partyConcurrency);

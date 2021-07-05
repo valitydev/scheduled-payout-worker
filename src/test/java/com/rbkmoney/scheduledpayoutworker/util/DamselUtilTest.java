@@ -9,10 +9,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class DamselUtilTest {
+class DamselUtilTest {
 
     @Test
-    public void testCorrectCashFlowPostings() {
+    void testCorrectCashFlowPostings() {
         for (CashFlowType cashFlowType : CashFlowType.values()) {
             cashFlowType.getSources().forEach((sourceAccount) ->
                     cashFlowType.getDestinations().forEach(
@@ -34,7 +34,7 @@ public class DamselUtilTest {
     }
 
     @Test
-    public void testCorrectCashFlowPostingsWithCashFlowAccount() {
+    void testCorrectCashFlowPostingsWithCashFlowAccount() {
         for (CashFlowType cashFlowType : CashFlowType.values()) {
             cashFlowType.getSources().forEach((sourceAccount) ->
                     cashFlowType.getDestinations().forEach(
@@ -50,7 +50,7 @@ public class DamselUtilTest {
     }
 
     @Test
-    public void testIncorrectCashFlowPostings() {
+    void testIncorrectCashFlowPostings() {
         assertEquals(
                 CashFlowType.UNKNOWN,
                 CashFlowType.getCashFlowType(
@@ -65,7 +65,7 @@ public class DamselUtilTest {
     }
 
     @Test
-    public void testComputeAdjustmentAmount() {
+    void testComputeAdjustmentAmount() {
         List<FinalCashFlowPosting> paymentCashFlow = List.of(
 
                 new FinalCashFlowPosting()
@@ -147,9 +147,8 @@ public class DamselUtilTest {
     }
 
 
-
     @Test
-    public void testAdjustmentStatusChangeCaptureToFailed() {
+    void testAdjustmentStatusChangeCaptureToFailed() {
         List<FinalCashFlowPosting> paymentCashFlow = List.of(
 
                 new FinalCashFlowPosting()
@@ -209,7 +208,7 @@ public class DamselUtilTest {
     }
 
     @Test
-    public void testAdjustmentStatusChangeFailedToCapture() {
+    void testAdjustmentStatusChangeFailedToCapture() {
         List<FinalCashFlowPosting> paymentCashFlow = List.of(
 
                 new FinalCashFlowPosting()

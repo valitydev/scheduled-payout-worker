@@ -6,7 +6,6 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
 import com.rbkmoney.scheduledpayoutworker.converter.PartyEventConverter;
-import com.rbkmoney.scheduledpayoutworker.poller.listener.PartyManagementKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.AfterEach;
@@ -23,7 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
-public class PartyManagementKafkaListenerTest {
+class PartyManagementKafkaListenerTest {
 
     @Mock
     private PartyManagementEventService partyManagementEventService;
@@ -48,7 +47,7 @@ public class PartyManagementKafkaListenerTest {
     }
 
     @Test
-    public void listenEmptyPartyManagementException() {
+    void listenEmptyPartyManagementException() {
         MachineEvent message = new MachineEvent();
         message.setData(new Value());
         message.getData().setBin(new byte[0]);
@@ -66,7 +65,7 @@ public class PartyManagementKafkaListenerTest {
     }
 
     @Test
-    public void listenValidPartyManagement() {
+    void listenValidPartyManagement() {
         PartyEventData partyEventData = new PartyEventData();
         ArrayList<PartyChange> partyChanges = new ArrayList<>();
         partyChanges.add(new PartyChange());

@@ -7,7 +7,6 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
 import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
-import com.rbkmoney.scheduledpayoutworker.poller.listener.InvoicingKafkaListener;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.AfterEach;
@@ -24,7 +23,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
-public class InvoicingKafkaListenerTest {
+class InvoicingKafkaListenerTest {
 
     @Mock
     private PaymentProcessingEventService paymentProcessingEventService;
@@ -49,7 +48,7 @@ public class InvoicingKafkaListenerTest {
     }
 
     @Test
-    public void listenNonInvoiceChanges() {
+    void listenNonInvoiceChanges() {
 
         MachineEvent message = new MachineEvent();
         message.setData(new Value());
@@ -70,7 +69,7 @@ public class InvoicingKafkaListenerTest {
     }
 
     @Test
-    public void listenEmptyException() {
+    void listenEmptyException() {
         MachineEvent message = new MachineEvent();
         message.setData(new Value());
         message.getData().setBin(new byte[0]);
@@ -88,7 +87,7 @@ public class InvoicingKafkaListenerTest {
     }
 
     @Test
-    public void listenChanges() {
+    void listenChanges() {
         Event event = new Event();
         EventPayload payload = new EventPayload();
         ArrayList<InvoiceChange> invoiceChanges = new ArrayList<>();
