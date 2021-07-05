@@ -150,7 +150,9 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
 
         //Send few invoices
-        producer.send(invoiceTopic, invoiceCreatedEvent(partyId, shopId)).completable().join();
+        String invoiceId = generateRandomStringId();
+        SinkEvent invoiceCreated = invoiceCreatedEvent(partyId, shopId, invoiceId);
+        producer.send(invoiceTopic, invoiceCreated).completable().join();
 
         Awaitility.await()
                 .atLeast(Duration.ofMillis(50))
@@ -178,8 +180,8 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         //Invoice with non-existing partyId and shopId must not be saved
         String unexpectedPartyId = "test";
         String unexpectedShopId = "test";
-
-        producer.send(invoiceTopic, invoiceCreatedEvent(unexpectedPartyId, unexpectedShopId));
+        String unexpectedInvoiceId = "test";
+        producer.send(invoiceTopic, invoiceCreatedEvent(unexpectedPartyId, unexpectedShopId, unexpectedInvoiceId));
 
         invoices =
                 jdbcTemplate.query("SELECT party_id, shop_id, created_at FROM pt.invoice where party_id = ?",
@@ -187,6 +189,14 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
                                 com.rbkmoney.payouter.domain.tables.pojos.Invoice.class),
                         unexpectedPartyId);
         assertTrue(invoices.isEmpty());
+
+        //Create payment
+        String paymentTimestamp = "2021-07-01T10:15:30Z";
+        long amount = 100L;
+        String paymentId = generateRandomStringId();
+        producer.send(invoiceTopic, paymentCreatedEvent(paymentId, invoiceId, paymentTimestamp, amount));
+        //Capture payment
+        producer.send(invoiceTopic, paymentCapturedEvent(invoiceId, paymentId, paymentTimestamp));
 
         //Check triggered job processing
         ScheduledJobExecutorSrv.Iface client = new THSpawnClientBuilder()
@@ -202,10 +212,12 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         when(payoutManagerClient.createPayout(any())).thenReturn(fillTBaseObject(new Payout(), Payout.class));
 
+        String schedulatorExecutionTimestamp = "2021-07-02T10:15:30Z";
+
         ExecuteJobRequest executeJobRequest = fillTBaseObject(new ExecuteJobRequest(), ExecuteJobRequest.class);
         executeJobRequest.setServiceExecutionContext(registerJobRequest.bufferForContext());
         ScheduledJobContext context = fillTBaseObject(new ScheduledJobContext(), ScheduledJobContext.class);
-        context.setNextCronTime("2011-12-03T10:15:30Z");
+        context.setNextCronTime(schedulatorExecutionTimestamp);
         executeJobRequest.setScheduledJobContext(context);
         assertEquals(registerJobRequest.bufferForContext(), client.executeJob(executeJobRequest));
 
@@ -217,7 +229,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         assertAll(
                 () -> assertEquals(party.getShops().get(shopId).getAccount().getCurrency(),
                         payoutParams.getCash().getCurrency()),
-                () -> assertEquals(0L, payoutParams.getCash().getAmount()),
+                () -> assertEquals(amount, payoutParams.getCash().getAmount()),
                 () -> assertEquals(partyId, payoutParams.getShopParams().getPartyId()),
                 () -> assertEquals(shopId, payoutParams.getShopParams().getShopId())
         );
