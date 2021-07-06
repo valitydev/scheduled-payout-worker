@@ -69,14 +69,16 @@ class PayoutManagerServiceTest {
         String partyId = generateRandomStringId();
         String shopId = generateRandomStringId();
         LocalDateTime toTime = LocalDateTime.now();
+        LocalDateTime fromTime = toTime.minusDays(7);
         Shop shop = prepareShop(shopId);
         long amount = 100L;
 
         when(partyManagementService.getShop(partyId, shopId)).thenReturn(shop);
-        when(paymentDao.includeUnpaid(payoutIdCaptor.capture(), eq(partyId), eq(shopId), eq(toTime))).thenReturn(1);
-        when(refundDao.includeUnpaid(notNull(), eq(partyId), eq(shopId))).thenReturn(0);
-        when(adjustmentDao.includeUnpaid(notNull(), eq(partyId), eq(shopId), eq(toTime))).thenReturn(0);
-        when(chargebackDao.includeUnpaid(notNull(), eq(partyId), eq(shopId))).thenReturn(0);
+        when(paymentDao.includeUnpaid(payoutIdCaptor.capture(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime)))
+                .thenReturn(1);
+        when(refundDao.includeUnpaid(notNull(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime))).thenReturn(0);
+        when(adjustmentDao.includeUnpaid(notNull(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime))).thenReturn(0);
+        when(chargebackDao.includeUnpaid(notNull(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime))).thenReturn(0);
         when(payoutDao.getAvailableAmount(notNull())).thenReturn(amount);
 
         CurrencyRef currency = shop.getAccount().getCurrency();
@@ -94,10 +96,10 @@ class PayoutManagerServiceTest {
         String tempPayoutId = payoutIdCaptor.getValue();
 
         verify(partyManagementService, times(1)).getShop(partyId, shopId);
-        verify(paymentDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, toTime);
-        verify(refundDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId);
-        verify(adjustmentDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, toTime);
-        verify(chargebackDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId);
+        verify(paymentDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
+        verify(refundDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
+        verify(adjustmentDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
+        verify(chargebackDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
         verify(payoutDao, times(1)).getAvailableAmount(tempPayoutId);
         verify(payoutManagerClient, times(1)).createPayout(payoutParams);
         verify(paymentDao, times(1)).updatePayoutId(tempPayoutId, payoutId);

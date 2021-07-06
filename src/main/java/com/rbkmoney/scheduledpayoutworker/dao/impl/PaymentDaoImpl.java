@@ -57,13 +57,14 @@ public class PaymentDaoImpl extends AbstractGenericDao implements PaymentDao {
     }
 
     @Override
-    public int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime to) throws DaoException {
+    public int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime from, LocalDateTime to)
+            throws DaoException {
         Query query = getDslContext().update(PAYMENT)
                 .set(PAYMENT.PAYOUT_ID, payoutId)
                 .where(PAYMENT.STATUS.eq(PaymentStatus.CAPTURED)
                         .and(PAYMENT.PARTY_ID.eq(partyId))
                         .and(PAYMENT.SHOP_ID.eq(shopId))
-                        .and(PAYMENT.CAPTURED_AT.lessThan(to))
+                        .and(PAYMENT.CAPTURED_AT.between(from, to))
                         .and(PAYMENT.PAYOUT_ID.isNull()));
         return execute(query);
     }

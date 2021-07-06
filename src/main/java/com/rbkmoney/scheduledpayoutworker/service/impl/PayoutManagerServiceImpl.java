@@ -50,7 +50,8 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
 
         //Temporary payoutId, before the final one from payoutManager is received
         String tempPayoutId = UUID.randomUUID().toString();
-        includeUnpaid(tempPayoutId, partyId, shopId, toTime);
+        LocalDateTime fromTime = toTime.minusDays(7);
+        includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
 
         long amount = calculateAvailableAmount(tempPayoutId);
 
@@ -64,15 +65,17 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
         return payout.getPayoutId();
     }
 
-    private void includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime toTime)
+    private void includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime fromTime,
+                               LocalDateTime toTime)
             throws StorageException {
-        log.info("Trying to include operations in payout, " +
-                "payoutId='{}', partyId='{}', shopId='{}', toTime='{}'", payoutId, partyId, shopId, toTime);
+        log.info("Trying to include operations in payout," +
+                        " payoutId='{}', partyId='{}', shopId='{}', fromTime='{}', toTime='{}'",
+                payoutId, partyId, shopId, fromTime, toTime);
         try {
-            int paymentCount = paymentDao.includeUnpaid(payoutId, partyId, shopId, toTime);
-            int refundCount = refundDao.includeUnpaid(payoutId, partyId, shopId);
-            int adjustmentCount = adjustmentDao.includeUnpaid(payoutId, partyId, shopId, toTime);
-            int chargebackCount = chargebackDao.includeUnpaid(payoutId, partyId, shopId);
+            int paymentCount = paymentDao.includeUnpaid(payoutId, partyId, shopId, fromTime, toTime);
+            int refundCount = refundDao.includeUnpaid(payoutId, partyId, shopId, fromTime, toTime);
+            int adjustmentCount = adjustmentDao.includeUnpaid(payoutId, partyId, shopId, fromTime, toTime);
+            int chargebackCount = chargebackDao.includeUnpaid(payoutId, partyId, shopId, fromTime, toTime);
             log.info("Operations have been included in payout, payoutId='{}' (paymentCount='{}', refundCount='{}', " +
                             "adjustmentCount='{}', chargebackCount='{}')",
                     payoutId, paymentCount, refundCount, adjustmentCount, chargebackCount);

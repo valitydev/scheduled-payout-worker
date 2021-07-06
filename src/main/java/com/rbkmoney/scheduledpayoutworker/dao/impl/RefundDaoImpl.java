@@ -76,13 +76,15 @@ public class RefundDaoImpl extends AbstractGenericDao implements RefundDao {
     }
 
     @Override
-    public int includeUnpaid(String payoutId, String partyId, String shopId) throws DaoException {
+    public int includeUnpaid(String payoutId, String partyId, String shopId,
+                             LocalDateTime from, LocalDateTime to) throws DaoException {
         Query query = getDslContext()
                 .update(REFUND)
                 .set(REFUND.PAYOUT_ID, payoutId)
                 .where(
                         REFUND.PARTY_ID.eq(partyId)
                                 .and(REFUND.SHOP_ID.eq(shopId))
+                                .and(REFUND.SUCCEEDED_AT.between(from, to))
                                 .and(REFUND.PAYOUT_ID.isNull())
                                 .and(REFUND.STATUS.eq(RefundStatus.SUCCEEDED))
                 );

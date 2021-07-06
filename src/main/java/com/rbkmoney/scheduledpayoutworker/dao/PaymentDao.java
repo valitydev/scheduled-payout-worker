@@ -13,7 +13,8 @@ public interface PaymentDao extends GenericDao {
 
     int excludeFromPayout(String payoutId) throws DaoException;
 
-    int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime to) throws DaoException;
+    int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime from, LocalDateTime to)
+            throws DaoException;
 
     void markAsCaptured(Long eventId, String invoiceId, String paymentId, LocalDateTime capturedAt) throws DaoException;
 
