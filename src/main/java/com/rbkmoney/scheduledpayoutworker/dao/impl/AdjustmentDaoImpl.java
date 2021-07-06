@@ -73,14 +73,15 @@ public class AdjustmentDaoImpl extends AbstractGenericDao implements AdjustmentD
     }
 
     @Override
-    public int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime to) throws DaoException {
+    public int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime from, LocalDateTime to)
+            throws DaoException {
         Query query = getDslContext()
                 .update(ADJUSTMENT)
                 .set(ADJUSTMENT.PAYOUT_ID, payoutId)
                 .where(
                         ADJUSTMENT.PARTY_ID.eq(partyId)
                                 .and(ADJUSTMENT.SHOP_ID.eq(shopId))
-                                .and(ADJUSTMENT.CAPTURED_AT.lessThan(to))
+                                .and(ADJUSTMENT.CAPTURED_AT.between(from, to))
                                 .and(ADJUSTMENT.STATUS.eq(AdjustmentStatus.CAPTURED))
                                 .and(ADJUSTMENT.PAYOUT_ID.isNull())
                 );
@@ -93,6 +94,14 @@ public class AdjustmentDaoImpl extends AbstractGenericDao implements AdjustmentD
         Query query = getDslContext().update(ADJUSTMENT)
                 .set(ADJUSTMENT.PAYOUT_ID, (String) null)
                 .where(ADJUSTMENT.PAYOUT_ID.eq(payoutId));
+        return execute(query);
+    }
+
+    @Override
+    public int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException {
+        Query query = getDslContext().update(ADJUSTMENT)
+                .set(ADJUSTMENT.PAYOUT_ID, newPayoutId)
+                .where(ADJUSTMENT.PAYOUT_ID.eq(oldPayoutId));
         return execute(query);
     }
 }

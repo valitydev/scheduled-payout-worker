@@ -77,18 +77,21 @@ public class SchedulatorServiceImpl implements SchedulatorService {
                 .setCalendarRef(calendarRef);
         schedule.setDominantSchedule(dominantBasedSchedule);
 
+        String jobId = generatePayoutScheduleId(partyId, shopId, scheduleRef.getId());
         ScheduledJobContext context = new ScheduledJobContext();
-        context.setJobId(scheduleRef.getId());
+        context.setPartyId(partyId);
+        context.setShopId(shopId);
+        context.setJobId(jobId);
 
         RegisterJobRequest registerJobRequest = new RegisterJobRequest()
                 .setSchedule(schedule)
                 .setExecutorServicePath(callbackPath)
                 .setContext(scheduledJobSerializer.writeByte(context));
-        String scheduleId = generatePayoutScheduleId(partyId, shopId, scheduleRef.getId());
+
         try {
-            schedulatorClient.registerJob(scheduleId, registerJobRequest);
+            schedulatorClient.registerJob(jobId, registerJobRequest);
         } catch (TException e) {
-            throw new IllegalStateException(String.format("Register job '%s' failed", scheduleId), e);
+            throw new IllegalStateException(String.format("Register job '%s' failed", jobId), e);
         }
 
         log.info("Create job request have been successfully sent, " +

@@ -1,6 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.util;
 
 import com.rbkmoney.damsel.domain.Invoice;
+import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.domain_config.VersionedObject;
 import com.rbkmoney.damsel.payment_processing.*;
@@ -23,7 +24,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class TestUtil {
 
-    private static MockTBaseProcessor mockTBaseProcessor;
+    private static final ThreadLocal<TSerializer> serializerLocal =
+            ThreadLocal.withInitial(() -> new TSerializer(new TBinaryProtocol.Factory()));
+    private static final MockTBaseProcessor mockTBaseProcessor;
 
     static {
         mockTBaseProcessor = new MockTBaseProcessor(MockMode.REQUIRED_ONLY, 15, 1);
@@ -33,9 +36,6 @@ public class TestUtil {
         );
         mockTBaseProcessor.addFieldHandler(timeFields.getKey(), timeFields.getValue());
     }
-
-    private static final ThreadLocal<TSerializer> serializerLocal =
-            ThreadLocal.withInitial(() -> new TSerializer(new TBinaryProtocol.Factory()));
 
     public static Party createParty(String partyId, String shopId, int paymentInstitutionId) {
         Party party = fillTBaseObject(new Party(), Party.class);
@@ -63,6 +63,16 @@ public class TestUtil {
         Shop shop = fillTBaseObject(new Shop(), Shop.class);
         shop.setContractId(contractId);
         shop.setPayoutToolId(payoutTool.getId());
+
+        Blocking blocking = fillTBaseObject(new Blocking(), Blocking.class);
+        Unblocked unblocked = fillTBaseObject(new Unblocked(), Unblocked.class);
+        blocking.setUnblocked(unblocked);
+        shop.setBlocking(blocking);
+
+        ShopAccount account = fillTBaseObject(new ShopAccount(), ShopAccount.class);
+        account.setCurrency(fillTBaseObject(new CurrencyRef(), CurrencyRef.class));
+        shop.setAccount(account);
+
 
         party.setShops(Map.of(shopId, shop));
         party.setContracts(Map.of(contractId, contract));
@@ -93,8 +103,9 @@ public class TestUtil {
     }
 
     @SneakyThrows
-    public static SinkEvent invoiceCreatedEvent(String partyId, String shopId) {
+    public static SinkEvent invoiceCreatedEvent(String partyId, String shopId, String invoiceId) {
         Invoice invoice = fillTBaseObject(new Invoice(), Invoice.class);
+        invoice.setId(invoiceId);
         invoice.setOwnerId(partyId);
         invoice.setShopId(shopId);
 
@@ -107,6 +118,77 @@ public class TestUtil {
 
         MachineEvent machineEvent = fillTBaseObject(new MachineEvent(), MachineEvent.class);
         machineEvent.setData(Value.bin(serializerLocal.get().serialize(eventPayload)));
+
+        SinkEvent sinkEvent = fillTBaseObject(new SinkEvent(), SinkEvent.class);
+        sinkEvent.setEvent(machineEvent);
+        return sinkEvent;
+    }
+
+    @SneakyThrows
+    public static SinkEvent paymentCreatedEvent(String paymentId, String invoiceId, String createdAt, long amount) {
+
+        InvoiceChange invoiceChange = fillTBaseObject(new InvoiceChange(), InvoiceChange.class);
+        InvoicePaymentChange paymentChange = fillTBaseObject(new InvoicePaymentChange(), InvoicePaymentChange.class);
+
+        InvoicePaymentChangePayload payload =
+                fillTBaseObject(new InvoicePaymentChangePayload(), InvoicePaymentChangePayload.class);
+        paymentChange.setPayload(payload);
+        InvoicePaymentStarted paymentStarted =
+                fillTBaseObject(new InvoicePaymentStarted(), InvoicePaymentStarted.class);
+        payload.setInvoicePaymentStarted(paymentStarted);
+        invoiceChange.setInvoicePaymentChange(paymentChange);
+        FinalCashFlowPosting cashFlowPosting = fillTBaseObject(new FinalCashFlowPosting(), FinalCashFlowPosting.class);
+        paymentStarted.setCashFlow(List.of(cashFlowPosting));
+
+        InvoicePayment invoicePayment = fillTBaseObject(new InvoicePayment(), InvoicePayment.class);
+        invoicePayment.setId(paymentId);
+        paymentStarted.setPayment(invoicePayment);
+        invoicePayment.setCreatedAt(createdAt);
+        Cash cash = fillTBaseObject(new Cash(), Cash.class);
+        invoicePayment.setCost(cash);
+        cash.setAmount(amount);
+
+        EventPayload eventPayload = fillTBaseObject(new EventPayload(), EventPayload.class);
+        eventPayload.setInvoiceChanges(List.of(invoiceChange));
+
+        MachineEvent machineEvent = fillTBaseObject(new MachineEvent(), MachineEvent.class);
+        machineEvent.setSourceId(invoiceId);
+        machineEvent.setData(Value.bin(serializerLocal.get().serialize(eventPayload)));
+
+        SinkEvent sinkEvent = fillTBaseObject(new SinkEvent(), SinkEvent.class);
+        sinkEvent.setEvent(machineEvent);
+        return sinkEvent;
+    }
+
+    @SneakyThrows
+    public static SinkEvent paymentCapturedEvent(String invoiceId, String paymentId, String createdAt) {
+        InvoiceChange invoiceChange = fillTBaseObject(new InvoiceChange(), InvoiceChange.class);
+        InvoicePaymentChange invoicePaymentChange =
+                fillTBaseObject(new InvoicePaymentChange(), InvoicePaymentChange.class);
+        invoicePaymentChange.setId(paymentId);
+        invoiceChange.setInvoicePaymentChange(invoicePaymentChange);
+        InvoicePaymentChangePayload
+                invoicePaymentChangePayload =
+                fillTBaseObject(new InvoicePaymentChangePayload(), InvoicePaymentChangePayload.class);
+        invoicePaymentChange.setPayload(invoicePaymentChangePayload);
+        InvoicePaymentStatusChanged statusChanged =
+                fillTBaseObject(new InvoicePaymentStatusChanged(), InvoicePaymentStatusChanged.class);
+        invoicePaymentChangePayload.setInvoicePaymentStatusChanged(statusChanged);
+        InvoicePaymentStatus
+                invoicePaymentStatus =
+                fillTBaseObject(new InvoicePaymentStatus(), InvoicePaymentStatus.class);
+        statusChanged.setStatus(invoicePaymentStatus);
+        InvoicePaymentCaptured captured =
+                fillTBaseObject(new InvoicePaymentCaptured(), InvoicePaymentCaptured.class);
+        invoicePaymentStatus.setCaptured(captured);
+
+        EventPayload eventPayload = fillTBaseObject(new EventPayload(), EventPayload.class);
+        eventPayload.setInvoiceChanges(List.of(invoiceChange));
+
+        MachineEvent machineEvent = fillTBaseObject(new MachineEvent(), MachineEvent.class);
+        machineEvent.setSourceId(invoiceId);
+        machineEvent.setData(Value.bin(serializerLocal.get().serialize(eventPayload)));
+        machineEvent.setCreatedAt(createdAt);
 
         SinkEvent sinkEvent = fillTBaseObject(new SinkEvent(), SinkEvent.class);
         sinkEvent.setEvent(machineEvent);

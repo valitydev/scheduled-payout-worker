@@ -77,13 +77,6 @@ public class PartyManagementServiceImpl implements PartyManagementService {
         return shop;
     }
 
-    @Override
-    public Contract getContract(String partyId, String contractId) throws NotFoundException {
-        PartyRevisionParam partyRevisionParam = PartyRevisionParam
-                .timestamp(TypeUtil.temporalToString(Instant.now()));
-        return getContract(partyId, contractId, partyRevisionParam);
-    }
-
     private Contract getContract(String partyId, String contractId, PartyRevisionParam partyRevisionParam)
             throws NotFoundException {
         log.info("Trying to get contract, partyId='{}', contractId='{}', partyRevisionParam='{}'",

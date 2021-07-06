@@ -89,13 +89,15 @@ public class ChargebackDaoImpl extends AbstractGenericDao implements ChargebackD
     }
 
     @Override
-    public int includeUnpaid(String payoutId, String partyId, String shopId) throws DaoException {
+    public int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime from, LocalDateTime to)
+            throws DaoException {
         Query query = getDslContext()
                 .update(CHARGEBACK)
                 .set(CHARGEBACK.PAYOUT_ID, payoutId)
                 .where(
                         CHARGEBACK.PARTY_ID.eq(partyId)
                                 .and(CHARGEBACK.SHOP_ID.eq(shopId))
+                                .and(CHARGEBACK.SUCCEEDED_AT.between(from, to))
                                 .and(CHARGEBACK.PAYOUT_ID.isNull())
                                 .and(CHARGEBACK.STATUS.eq(ChargebackStatus.SUCCEEDED))
                 );
@@ -107,6 +109,14 @@ public class ChargebackDaoImpl extends AbstractGenericDao implements ChargebackD
         Query query = getDslContext().update(CHARGEBACK)
                 .set(CHARGEBACK.PAYOUT_ID, (String) null)
                 .where(CHARGEBACK.PAYOUT_ID.eq(payoutId));
+        return execute(query);
+    }
+
+    @Override
+    public int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException {
+        Query query = getDslContext().update(CHARGEBACK)
+                .set(CHARGEBACK.PAYOUT_ID, newPayoutId)
+                .where(CHARGEBACK.PAYOUT_ID.eq(oldPayoutId));
         return execute(query);
     }
 

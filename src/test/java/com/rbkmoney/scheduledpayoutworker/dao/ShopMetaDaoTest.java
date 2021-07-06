@@ -4,6 +4,7 @@ import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.config.AbstractPostgreTestContainerConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestPropertySource(properties = {"kafka.topics.invoice.enabled=false",
+        "kafka.topics.party-management.enabled=false"})
 class ShopMetaDaoTest extends AbstractPostgreTestContainerConfig {
 
     @Autowired

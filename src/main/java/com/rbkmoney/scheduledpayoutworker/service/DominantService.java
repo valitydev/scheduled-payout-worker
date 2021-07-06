@@ -1,7 +1,6 @@
 package com.rbkmoney.scheduledpayoutworker.service;
 
 import com.rbkmoney.damsel.domain.*;
-import com.rbkmoney.damsel.domain_config.Reference;
 import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 
 public interface DominantService {

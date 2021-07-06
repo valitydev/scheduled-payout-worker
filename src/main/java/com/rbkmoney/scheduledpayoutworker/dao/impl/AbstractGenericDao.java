@@ -24,7 +24,7 @@ public abstract class AbstractGenericDao extends NamedParameterJdbcDaoSupport im
 
     private final DSLContext dslContext;
 
-    public AbstractGenericDao(DataSource dataSource) {
+    protected AbstractGenericDao(DataSource dataSource) {
         setDataSource(dataSource);
         Configuration configuration = new DefaultConfiguration();
         configuration.set(SQLDialect.POSTGRES);

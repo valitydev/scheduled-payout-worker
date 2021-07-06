@@ -56,6 +56,9 @@ service:
     url: http://schedulator:8022/v1/schedulator
     networkTimeout: 5000
     callback-path: http://localhost:8022/v1/schedulator
+  payoutManager:
+    url: http://payoutmanager:8022/payout/management
+    networkTimeout: 5000
 kafka:
   bootstrap-servers: kafka1.bst1.rbkmoney.net:9092
   client-id: scheduled-payout-worker

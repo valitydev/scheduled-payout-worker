@@ -5,10 +5,13 @@ import com.rbkmoney.scheduledpayoutworker.config.AbstractPostgreTestContainerCon
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestPropertySource(properties = {"kafka.topics.invoice.enabled=false",
+        "kafka.topics.party-management.enabled=false"})
 class AdjustmentDaoTest extends AbstractPostgreTestContainerConfig {
 
     @Autowired

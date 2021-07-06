@@ -16,8 +16,11 @@ public interface AdjustmentDao extends GenericDao {
 
     void markAsCancelled(long eventId, String invoiceId, String paymentId, String adjustmentId) throws DaoException;
 
-    int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime to) throws DaoException;
+    int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime from, LocalDateTime to)
+            throws DaoException;
 
     int excludeFromPayout(String payoutId) throws DaoException;
+
+    int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException;
 
 }

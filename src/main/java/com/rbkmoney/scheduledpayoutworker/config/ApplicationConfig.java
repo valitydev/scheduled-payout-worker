@@ -3,6 +3,7 @@ package com.rbkmoney.scheduledpayoutworker.config;
 import com.rbkmoney.damsel.domain_config.RepositoryClientSrv;
 import com.rbkmoney.damsel.payment_processing.PartyManagementSrv;
 import com.rbkmoney.damsel.schedule.SchedulatorSrv;
+import com.rbkmoney.payout.manager.PayoutManagementSrv;
 import com.rbkmoney.woody.thrift.impl.http.THSpawnClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +43,16 @@ public class ApplicationConfig {
         return new THSpawnClientBuilder()
                 .withNetworkTimeout(networkTimeout)
                 .withAddress(resource.getURI()).build(RepositoryClientSrv.Iface.class);
+    }
+
+    @Bean
+    public PayoutManagementSrv.Iface payoutManagerClient(
+            @Value("${service.payoutManager.url}") Resource resource,
+            @Value("${service.payoutManager.networkTimeout}") int networkTimeout
+    ) throws IOException {
+        return new THSpawnClientBuilder()
+                .withNetworkTimeout(networkTimeout)
+                .withAddress(resource.getURI()).build(PayoutManagementSrv.Iface.class);
     }
 
 
