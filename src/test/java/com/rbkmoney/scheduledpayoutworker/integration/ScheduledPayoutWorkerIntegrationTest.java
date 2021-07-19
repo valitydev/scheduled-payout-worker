@@ -227,8 +227,8 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         PayoutParams payoutParams = payoutParamsCaptor.getValue();
 
         assertAll(
-                () -> assertEquals(party.getShops().get(shopId).getAccount().getCurrency(),
-                        payoutParams.getCash().getCurrency()),
+                () -> assertEquals(party.getShops().get(shopId).getAccount().getCurrency().getSymbolicCode(),
+                        payoutParams.getCash().getCurrency().getSymbolicCode()),
                 () -> assertEquals(amount, payoutParams.getCash().getAmount()),
                 () -> assertEquals(partyId, payoutParams.getShopParams().getPartyId()),
                 () -> assertEquals(shopId, payoutParams.getShopParams().getShopId())

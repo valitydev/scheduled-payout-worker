@@ -99,11 +99,4 @@ public class RefundDaoImpl extends AbstractGenericDao implements RefundDao {
         return execute(query);
     }
 
-    @Override
-    public int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException {
-        Query query = getDslContext().update(REFUND)
-                .set(REFUND.PAYOUT_ID, newPayoutId)
-                .where(REFUND.PAYOUT_ID.eq(oldPayoutId));
-        return execute(query);
-    }
 }

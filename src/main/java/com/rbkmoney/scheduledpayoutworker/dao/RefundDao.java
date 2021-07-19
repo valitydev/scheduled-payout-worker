@@ -20,7 +20,4 @@ public interface RefundDao extends GenericDao {
             throws DaoException;
 
     int excludeFromPayout(String payoutId) throws DaoException;
-
-    int updatePayoutId(String oldPayoutId, String newPayoutId) throws DaoException;
-
 }
