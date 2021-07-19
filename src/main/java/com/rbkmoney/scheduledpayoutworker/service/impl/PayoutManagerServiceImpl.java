@@ -1,12 +1,11 @@
 package com.rbkmoney.scheduledpayoutworker.service.impl;
 
-import com.rbkmoney.damsel.domain.Cash;
-import com.rbkmoney.damsel.domain.CurrencyRef;
 import com.rbkmoney.damsel.domain.Shop;
-import com.rbkmoney.payout.manager.Payout;
 import com.rbkmoney.payout.manager.PayoutManagementSrv;
 import com.rbkmoney.payout.manager.PayoutParams;
 import com.rbkmoney.payout.manager.ShopParams;
+import com.rbkmoney.payout.manager.domain.Cash;
+import com.rbkmoney.payout.manager.domain.CurrencyRef;
 import com.rbkmoney.scheduledpayoutworker.dao.*;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import com.rbkmoney.scheduledpayoutworker.exception.InvalidStateException;
@@ -48,21 +47,21 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
             );
         }
 
-        //Temporary payoutId, before the final one from payoutManager is received
-        String tempPayoutId = UUID.randomUUID().toString();
+        String payoutId = UUID.randomUUID().toString();
         LocalDateTime fromTime = toTime.minusDays(7);
-        includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
+        includeUnpaid(payoutId, partyId, shopId, fromTime, toTime);
 
-        long amount = calculateAvailableAmount(tempPayoutId);
+        long amount = calculateAvailableAmount(payoutId);
 
-        CurrencyRef currency = shop.getAccount().getCurrency();
+        String symbolicCode = shop.getAccount().getCurrency().getSymbolicCode();
+        CurrencyRef currency = new CurrencyRef().setSymbolicCode(symbolicCode);
         Cash cash = new Cash().setAmount(amount).setCurrency(currency);
         ShopParams shopParams = new ShopParams().setPartyId(partyId).setShopId(shopId);
         PayoutParams payoutParams = new PayoutParams(shopParams, cash);
+        payoutParams.setPayoutId(payoutId);
 
-        Payout payout = payoutManagerClient.createPayout(payoutParams);
-        updatePayoutId(tempPayoutId, payout.getPayoutId());
-        return payout.getPayoutId();
+        payoutManagerClient.createPayout(payoutParams);
+        return payoutId;
     }
 
     private void includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime fromTime,
@@ -92,20 +91,6 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
             return amount;
         } catch (DaoException ex) {
             throw new StorageException(ex);
-        }
-    }
-
-    private void updatePayoutId(String oldPayoutId, String newPayoutId) {
-        log.info("Trying to update payoutId from '{}' to '{}'", oldPayoutId, newPayoutId);
-        try {
-            paymentDao.updatePayoutId(oldPayoutId, newPayoutId);
-            refundDao.updatePayoutId(oldPayoutId, newPayoutId);
-            adjustmentDao.updatePayoutId(oldPayoutId, newPayoutId);
-            chargebackDao.updatePayoutId(oldPayoutId, newPayoutId);
-            log.info("Successfully updated payoutId from '{}' to '{}'", oldPayoutId, newPayoutId);
-        } catch (DaoException ex) {
-            throw new StorageException(
-                    String.format("Failed to update payoutId from '%s' to '%s'", oldPayoutId, newPayoutId), ex);
         }
     }
 

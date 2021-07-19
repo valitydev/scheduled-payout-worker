@@ -1,10 +1,15 @@
 package com.rbkmoney.scheduledpayoutworker.service;
 
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.Blocking;
+import com.rbkmoney.damsel.domain.Shop;
+import com.rbkmoney.damsel.domain.ShopAccount;
+import com.rbkmoney.damsel.domain.Unblocked;
 import com.rbkmoney.payout.manager.Payout;
 import com.rbkmoney.payout.manager.PayoutManagementSrv;
 import com.rbkmoney.payout.manager.PayoutParams;
 import com.rbkmoney.payout.manager.ShopParams;
+import com.rbkmoney.payout.manager.domain.Cash;
+import com.rbkmoney.payout.manager.domain.CurrencyRef;
 import com.rbkmoney.scheduledpayoutworker.dao.*;
 import com.rbkmoney.scheduledpayoutworker.service.impl.PayoutManagerServiceImpl;
 import org.apache.thrift.TException;
@@ -17,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.fillTBaseObject;
 import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.generateRandomStringId;
@@ -41,7 +47,7 @@ class PayoutManagerServiceTest {
     @Mock
     private PartyManagementService partyManagementService;
     @Captor
-    private ArgumentCaptor<String> payoutIdCaptor;
+    private ArgumentCaptor<PayoutParams> payoutParamsCaptor;
 
     private PayoutManagerService service;
 
@@ -72,40 +78,39 @@ class PayoutManagerServiceTest {
         LocalDateTime fromTime = toTime.minusDays(7);
         Shop shop = prepareShop(shopId);
         long amount = 100L;
+        String payoutId = UUID.randomUUID().toString();
 
         when(partyManagementService.getShop(partyId, shopId)).thenReturn(shop);
-        when(paymentDao.includeUnpaid(payoutIdCaptor.capture(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime)))
-                .thenReturn(1);
+        when(paymentDao.includeUnpaid(payoutId, partyId, shopId, fromTime, toTime)).thenReturn(1);
         when(refundDao.includeUnpaid(notNull(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime))).thenReturn(0);
         when(adjustmentDao.includeUnpaid(notNull(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime))).thenReturn(0);
         when(chargebackDao.includeUnpaid(notNull(), eq(partyId), eq(shopId), eq(fromTime), eq(toTime))).thenReturn(0);
         when(payoutDao.getAvailableAmount(notNull())).thenReturn(amount);
 
-        CurrencyRef currency = shop.getAccount().getCurrency();
-        Cash cash = new Cash().setAmount(amount).setCurrency(currency);
-        ShopParams shopParams = new ShopParams().setPartyId(partyId).setShopId(shopId);
-        PayoutParams payoutParams = new PayoutParams(shopParams, cash);
-
         Payout payout = new Payout();
-        String payoutId = generateRandomStringId();
         payout.setPayoutId(payoutId);
+        when(payoutManagerClient.createPayout(payoutParamsCaptor.capture())).thenReturn(payout);
 
-        when(payoutManagerClient.createPayout(payoutParams)).thenReturn(payout);
+        String actualPayoutId = service.createPayoutByRange(partyId, shopId, toTime);
+        PayoutParams payoutParams = payoutParamsCaptor.getValue();
+        assertEquals(payoutParams.getPayoutId(), actualPayoutId);
 
-        assertEquals(payoutId, service.createPayoutByRange(partyId, shopId, toTime));
-        String tempPayoutId = payoutIdCaptor.getValue();
+        String symbolicCode = shop.getAccount().getCurrency().getSymbolicCode();
+        CurrencyRef currency = new CurrencyRef().setSymbolicCode(symbolicCode);
+        Cash cash = new Cash().setAmount(amount).setCurrency(currency);
+        assertEquals(cash, payoutParams.getCash());
+
+        ShopParams shopParams = payoutParams.getShopParams();
+        assertEquals(partyId, shopParams.getPartyId());
+        assertEquals(shopId, shopParams.getShopId());
 
         verify(partyManagementService, times(1)).getShop(partyId, shopId);
-        verify(paymentDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
-        verify(refundDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
-        verify(adjustmentDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
-        verify(chargebackDao, times(1)).includeUnpaid(tempPayoutId, partyId, shopId, fromTime, toTime);
-        verify(payoutDao, times(1)).getAvailableAmount(tempPayoutId);
+        verify(paymentDao, times(1)).includeUnpaid(actualPayoutId, partyId, shopId, fromTime, toTime);
+        verify(refundDao, times(1)).includeUnpaid(actualPayoutId, partyId, shopId, fromTime, toTime);
+        verify(adjustmentDao, times(1)).includeUnpaid(actualPayoutId, partyId, shopId, fromTime, toTime);
+        verify(chargebackDao, times(1)).includeUnpaid(actualPayoutId, partyId, shopId, fromTime, toTime);
+        verify(payoutDao, times(1)).getAvailableAmount(actualPayoutId);
         verify(payoutManagerClient, times(1)).createPayout(payoutParams);
-        verify(paymentDao, times(1)).updatePayoutId(tempPayoutId, payoutId);
-        verify(refundDao, times(1)).updatePayoutId(tempPayoutId, payoutId);
-        verify(adjustmentDao, times(1)).updatePayoutId(tempPayoutId, payoutId);
-        verify(chargebackDao, times(1)).updatePayoutId(tempPayoutId, payoutId);
 
     }
 
@@ -119,7 +124,8 @@ class PayoutManagerServiceTest {
         shop.setBlocking(blocking);
 
         ShopAccount account = fillTBaseObject(new ShopAccount(), ShopAccount.class);
-        account.setCurrency(fillTBaseObject(new CurrencyRef(), CurrencyRef.class));
+        account.setCurrency(fillTBaseObject(new com.rbkmoney.damsel.domain.CurrencyRef(),
+                com.rbkmoney.damsel.domain.CurrencyRef.class));
         shop.setAccount(account);
         return shop;
     }
