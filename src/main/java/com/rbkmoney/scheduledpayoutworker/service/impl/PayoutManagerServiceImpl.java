@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
     private final PartyManagementService partyManagementService;
 
     @Override
+    @Transactional
     public String createPayoutByRange(String partyId, String shopId, LocalDateTime toTime)
             throws NotFoundException, StorageException, TException {
 
