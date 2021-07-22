@@ -1,7 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.config;
 
 import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.scheduledpayoutworker.config.properties.KafkaSslProperties;
 import com.rbkmoney.scheduledpayoutworker.serde.impl.kafka.SinkEventDeserializer;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -14,10 +14,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 
 import java.io.File;
@@ -78,22 +76,22 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, MachineEvent> invoiceConsumerFactory(KafkaSslProperties kafkaSslProperties) {
+    public ConsumerFactory<String, SinkEvent> invoiceConsumerFactory(KafkaSslProperties kafkaSslProperties) {
         Map<String, Object> config = consumerConfigs(kafkaSslProperties);
         config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId + "-invoice");
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
     @Bean
-    public ConsumerFactory<String, MachineEvent> pmConsumerFactory(KafkaSslProperties kafkaSslProperties) {
+    public ConsumerFactory<String, SinkEvent> pmConsumerFactory(KafkaSslProperties kafkaSslProperties) {
         Map<String, Object> config = consumerConfigs(kafkaSslProperties);
         config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId + "-pm");
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> invContainerFactory(
-            ConsumerFactory<String, MachineEvent> invoiceConsumerFactory) {
+    public ConcurrentKafkaListenerContainerFactory<String, SinkEvent> invContainerFactory(
+            ConsumerFactory<String, SinkEvent> invoiceConsumerFactory) {
         var factory = createGeneralKafkaListenerFactory(invoiceConsumerFactory);
         factory.setBatchListener(true);
         factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
@@ -102,8 +100,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> pmContainerFactory(
-            ConsumerFactory<String, MachineEvent> pmConsumerFactory) {
+    public ConcurrentKafkaListenerContainerFactory<String, SinkEvent> pmContainerFactory(
+            ConsumerFactory<String, SinkEvent> pmConsumerFactory) {
         var factory = createGeneralKafkaListenerFactory(pmConsumerFactory);
         factory.setBatchListener(true);
         factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
@@ -111,9 +109,9 @@ public class KafkaConfig {
         return factory;
     }
 
-    private ConcurrentKafkaListenerContainerFactory<String, MachineEvent> createGeneralKafkaListenerFactory(
-            ConsumerFactory<String, MachineEvent> consumerFactory) {
-        var factory = new ConcurrentKafkaListenerContainerFactory<String, MachineEvent>();
+    private ConcurrentKafkaListenerContainerFactory<String, SinkEvent> createGeneralKafkaListenerFactory(
+            ConsumerFactory<String, SinkEvent> consumerFactory) {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, SinkEvent>();
         factory.setConsumerFactory(consumerFactory);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
