@@ -6,7 +6,6 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
-import com.rbkmoney.scheduledpayoutworker.converter.SourceEventConverter;
 import com.rbkmoney.scheduledpayoutworker.service.PaymentProcessingEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ class InvoicingKafkaListenerTest {
     @Mock
     private PaymentProcessingEventService paymentProcessingEventService;
     @Mock
-    private SourceEventConverter parser;
+    private ConversionService converter;
     @Mock
     private Acknowledgment ack;
 
@@ -39,7 +39,7 @@ class InvoicingKafkaListenerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        listener = new InvoicingKafkaListener(paymentProcessingEventService, parser);
+        listener = new InvoicingKafkaListener(paymentProcessingEventService, converter);
     }
 
     @AfterEach
@@ -55,7 +55,7 @@ class InvoicingKafkaListenerTest {
         message.getData().setBin(new byte[0]);
         EventPayload payload = new EventPayload();
         payload.setCustomerChanges(List.of());
-        Mockito.when(parser.convert(message)).thenReturn(payload);
+        Mockito.when(converter.convert(message, EventPayload.class)).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
@@ -77,7 +77,7 @@ class InvoicingKafkaListenerTest {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        Mockito.when(parser.convert(message)).thenThrow(new RuntimeException());
+        Mockito.when(converter.convert(message, EventPayload.class)).thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> listener.handle(List.of(
                 new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)
@@ -95,7 +95,7 @@ class InvoicingKafkaListenerTest {
         payload.setInvoiceChanges(invoiceChanges);
         event.setPayload(payload);
         MachineEvent message = new MachineEvent();
-        Mockito.when(parser.convert(message)).thenReturn(payload);
+        Mockito.when(converter.convert(message, EventPayload.class)).thenReturn(payload);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);

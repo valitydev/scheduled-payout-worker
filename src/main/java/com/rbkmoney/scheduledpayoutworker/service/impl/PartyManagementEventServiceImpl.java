@@ -26,7 +26,7 @@ public class PartyManagementEventServiceImpl implements PartyManagementEventServ
         long eventId = event.getEventId();
         String createdAt = event.getCreatedAt();
         log.debug("Trying to save eventId, eventId={}, eventCreatedAt={}", eventId, createdAt);
-        if (eventPayload.isSetChanges()) {
+        if (eventPayload != null && eventPayload.isSetChanges()) {
             for (PartyChange change : eventPayload.getChanges()) {
                 handlers.stream()
                         .filter(handler -> handler.accept(change))

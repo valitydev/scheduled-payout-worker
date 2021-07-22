@@ -5,7 +5,6 @@ import com.rbkmoney.damsel.payment_processing.PartyEventData;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
-import com.rbkmoney.scheduledpayoutworker.converter.PartyEventConverter;
 import com.rbkmoney.scheduledpayoutworker.service.PartyManagementEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ class PartyManagementKafkaListenerTest {
     @Mock
     private PartyManagementEventService partyManagementEventService;
     @Mock
-    private PartyEventConverter parser;
+    private ConversionService converter;
     @Mock
     private Acknowledgment ack;
 
@@ -38,7 +38,7 @@ class PartyManagementKafkaListenerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        listener = new PartyManagementKafkaListener(partyManagementEventService, parser);
+        listener = new PartyManagementKafkaListener(partyManagementEventService, converter);
     }
 
     @AfterEach
@@ -55,7 +55,7 @@ class PartyManagementKafkaListenerTest {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
 
-        Mockito.when(parser.convert(message)).thenThrow(new RuntimeException());
+        Mockito.when(converter.convert(message, PartyEventData.class)).thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> listener.handle(List.of(
                 new ConsumerRecord<>("Test", 0, 0, "", sinkEvent)),
@@ -74,7 +74,7 @@ class PartyManagementKafkaListenerTest {
         message.setData(new Value());
         message.getData().setBin(new byte[0]);
 
-        Mockito.when(parser.convert(message)).thenReturn(partyEventData);
+        Mockito.when(converter.convert(message, PartyEventData.class)).thenReturn(partyEventData);
 
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(message);
