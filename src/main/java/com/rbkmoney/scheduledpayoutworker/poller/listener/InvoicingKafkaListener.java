@@ -29,7 +29,7 @@ public class InvoicingKafkaListener {
                 MachineEvent event = sinkEvent.value().getEvent();
                 log.debug("Reading sinkEvent, sourceId: {}, sequenceId: {}", event.getSourceId(), event.getEventId());
                 EventPayload payload = converter.convert(event, EventPayload.class);
-                if (payload.isSetInvoiceChanges()) {
+                if (payload != null && payload.isSetInvoiceChanges()) {
                     paymentProcessingEventService.processEvent(event, payload);
                 }
             }
