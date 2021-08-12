@@ -48,10 +48,8 @@ class SchedulatorServiceTest {
         service = new SchedulatorServiceImpl(dominantService, partyManagementService, shopMetaDao,
                 schedulatorClient, scheduledJobSerializer);
         ReflectionTestUtils.setField(service, "callbackPath", callbackPath);
-        ShopMeta shopMeta = new ShopMeta();
-        shopMeta.setHasPaymentInstitutionAccPayTool(true);
         Mockito.when(shopMetaDao.get(anyString(), anyString()))
-                .thenReturn(shopMeta);
+                .thenReturn(new ShopMeta());
     }
 
     @AfterEach
@@ -85,7 +83,7 @@ class SchedulatorServiceTest {
         verify(dominantService, times(1)).getPaymentInstitution(institutionRef);
         verify(shopMetaDao, times(1))
                 .save(partyId, shopId, paymentInstitution.getCalendar().getId(), businessScheduleRef.getId(), true);
-        verify(shopMetaDao, times(2)).get(partyId, shopId);
+        verify(shopMetaDao, times(1)).get(partyId, shopId);
         verify(shopMetaDao, times(1)).disableShop(partyId, shopId);
         verify(schedulatorClient, times(1)).deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
         verify(scheduledJobSerializer, times(1)).writeByte(scheduledJobContextCaptor.capture());

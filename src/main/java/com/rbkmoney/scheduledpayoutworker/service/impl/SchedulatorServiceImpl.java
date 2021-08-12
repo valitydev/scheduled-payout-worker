@@ -93,18 +93,15 @@ public class SchedulatorServiceImpl implements SchedulatorService {
     @Transactional
     public void deregisterJob(String partyId, String shopId) {
         ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
-        if (shopMeta != null) {
-            log.info("Trying to deregister job, partyId='{}', shopId='{}'", partyId, shopId);
-            shopMetaDao.disableShop(partyId, shopId);
-            if (shopMeta.getSchedulerId() != null) {
-                try {
-                    schedulatorClient.deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
-                } catch (TException e) {
-                    throw new IllegalStateException(
-                            String.format("Deregister job '%s' failed", shopMeta.getSchedulerId()), e);
-                }
+        log.info("Trying to deregister job, partyId='{}', shopId='{}'", partyId, shopId);
+        shopMetaDao.disableShop(partyId, shopId);
+        if (shopMeta.getSchedulerId() != null) {
+            try {
+                schedulatorClient.deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
+            } catch (TException e) {
+                throw new IllegalStateException(
+                        String.format("Deregister job '%s' failed", shopMeta.getSchedulerId()), e);
             }
         }
     }
-
 }
