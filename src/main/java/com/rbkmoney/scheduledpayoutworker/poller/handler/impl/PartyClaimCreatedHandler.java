@@ -2,6 +2,7 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 
 import com.rbkmoney.damsel.domain.Shop;
 import com.rbkmoney.damsel.payment_processing.*;
+import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PartyManagementHandler;

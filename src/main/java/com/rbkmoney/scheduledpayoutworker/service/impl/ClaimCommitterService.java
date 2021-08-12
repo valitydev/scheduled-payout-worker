@@ -1,6 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.service.impl;
 
 import com.rbkmoney.damsel.claim_management.*;
+import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.handler.CommitHandler;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +58,4 @@ public class ClaimCommitterService implements ClaimCommitterSrv.Iface {
             }
         }
     }
-
 }
