@@ -11,10 +11,7 @@ import org.apache.thrift.TException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static com.rbkmoney.scheduledpayoutworker.util.TestUtil.*;
@@ -51,6 +48,10 @@ class SchedulatorServiceTest {
         service = new SchedulatorServiceImpl(dominantService, partyManagementService, shopMetaDao,
                 schedulatorClient, scheduledJobSerializer);
         ReflectionTestUtils.setField(service, "callbackPath", callbackPath);
+        ShopMeta shopMeta = new ShopMeta();
+        shopMeta.setHasPaymentInstitutionAccPayTool(true);
+        Mockito.when(shopMetaDao.get(anyString(), anyString()))
+                .thenReturn(shopMeta);
     }
 
     @AfterEach
