@@ -59,16 +59,6 @@ public class SchedulatorServiceImpl implements SchedulatorService {
         deregisterJob(partyId, shopId);
 
         CalendarRef calendarRef = paymentInstitution.getCalendar();
-        ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
-
-        if (shopMeta == null) {
-            log.warn("ShopMeta wasn't found, partyId='{}', shopId='{}'", partyId, shopId);
-        } else if (!shopMeta.getHasPaymentInstitutionAccPayTool()) {
-            log.warn(
-                    "ShopMeta has different from PaymentInstitutionAccountPaymentTool " +
-                            "payment tool, partyId='{}', shopId='{}'",
-                    partyId, shopId);
-        }
 
         shopMetaDao.save(partyId, shopId, calendarRef.getId(), scheduleRef.getId(), true);
         Schedule schedule = new Schedule();

@@ -3,6 +3,7 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 import com.rbkmoney.damsel.domain.Shop;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PartyManagementHandler;
 import com.rbkmoney.scheduledpayoutworker.service.SchedulatorService;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
@@ -18,6 +19,8 @@ import java.util.List;
 public class PartyClaimCreatedHandler implements PartyManagementHandler {
 
     private final SchedulatorService schedulatorService;
+
+    private final ShopMetaDao shopMetaDao;
 
     @Override
     public boolean accept(PartyChange change) {
@@ -37,17 +40,20 @@ public class PartyClaimCreatedHandler implements PartyManagementHandler {
                 ShopEffectUnit shopEffectUnit = claimEffect.getShopEffect();
                 String shopId = shopEffectUnit.getShopId();
                 ShopEffect shopEffect = shopEffectUnit.getEffect();
-                if (shopEffect.isSetPayoutScheduleChanged()) {
-                    ScheduleChanged scheduleChanged = shopEffect.getPayoutScheduleChanged();
-                    if (scheduleChanged.isSetSchedule()) {
-                        schedulatorService.registerJob(partyId, shopId, scheduleChanged.getSchedule());
-                    } else {
-                        schedulatorService.deregisterJob(partyId, shopId);
-                    }
-                } else if (shopEffect.isSetCreated()) {
-                    Shop shop = shopEffect.getCreated();
-                    if (shop.isSetPayoutSchedule()) {
-                        schedulatorService.registerJob(partyId, shopId, shop.getPayoutSchedule());
+                ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
+                if (shopMeta != null && shopMeta.getHasPaymentInstitutionAccPayTool()) {
+                    if (shopEffect.isSetPayoutScheduleChanged()) {
+                        ScheduleChanged scheduleChanged = shopEffect.getPayoutScheduleChanged();
+                        if (scheduleChanged.isSetSchedule()) {
+                            schedulatorService.registerJob(partyId, shopId, scheduleChanged.getSchedule());
+                        } else {
+                            schedulatorService.deregisterJob(partyId, shopId);
+                        }
+                    } else if (shopEffect.isSetCreated()) {
+                        Shop shop = shopEffect.getCreated();
+                        if (shop.isSetPayoutSchedule()) {
+                            schedulatorService.registerJob(partyId, shopId, shop.getPayoutSchedule());
+                        }
                     }
                 }
             }
