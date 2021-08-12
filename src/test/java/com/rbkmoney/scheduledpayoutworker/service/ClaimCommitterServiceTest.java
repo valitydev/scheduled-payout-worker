@@ -1,6 +1,7 @@
 package com.rbkmoney.scheduledpayoutworker.service;
 
 import com.rbkmoney.damsel.claim_management.*;
+import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.handler.CommitHandler;
 import com.rbkmoney.scheduledpayoutworker.service.impl.ClaimCommitterService;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
@@ -36,6 +38,10 @@ class ClaimCommitterServiceTest {
         mocks = MockitoAnnotations.openMocks(this);
         preparedMocks = new Object[] {handler};
         service = new ClaimCommitterService(handler, shopMetaDao);
+        ShopMeta shopMeta = new ShopMeta();
+        shopMeta.setHasPaymentInstitutionAccPayTool(true);
+        Mockito.when(shopMetaDao.get(anyString(), anyString()))
+                .thenReturn(shopMeta);
     }
 
     @AfterEach
