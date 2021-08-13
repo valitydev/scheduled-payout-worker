@@ -59,16 +59,6 @@ public class SchedulatorServiceImpl implements SchedulatorService {
         deregisterJob(partyId, shopId);
 
         CalendarRef calendarRef = paymentInstitution.getCalendar();
-        ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
-
-        if (shopMeta == null) {
-            log.warn("ShopMeta wasn't found, partyId='{}', shopId='{}'", partyId, shopId);
-        } else if (!shopMeta.getHasPaymentInstitutionAccPayTool()) {
-            log.warn(
-                    "ShopMeta has different from PaymentInstitutionAccountPaymentTool " +
-                            "payment tool, partyId='{}', shopId='{}'",
-                    partyId, shopId);
-        }
 
         shopMetaDao.save(partyId, shopId, calendarRef.getId(), scheduleRef.getId(), true);
         Schedule schedule = new Schedule();
@@ -103,18 +93,15 @@ public class SchedulatorServiceImpl implements SchedulatorService {
     @Transactional
     public void deregisterJob(String partyId, String shopId) {
         ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
-        if (shopMeta != null) {
-            log.info("Trying to deregister job, partyId='{}', shopId='{}'", partyId, shopId);
-            shopMetaDao.disableShop(partyId, shopId);
-            if (shopMeta.getSchedulerId() != null) {
-                try {
-                    schedulatorClient.deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
-                } catch (TException e) {
-                    throw new IllegalStateException(
-                            String.format("Deregister job '%s' failed", shopMeta.getSchedulerId()), e);
-                }
+        log.info("Trying to deregister job, partyId='{}', shopId='{}'", partyId, shopId);
+        shopMetaDao.disableShop(partyId, shopId);
+        if (shopMeta.getSchedulerId() != null) {
+            try {
+                schedulatorClient.deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
+            } catch (TException e) {
+                throw new IllegalStateException(
+                        String.format("Deregister job '%s' failed", shopMeta.getSchedulerId()), e);
             }
         }
     }
-
 }

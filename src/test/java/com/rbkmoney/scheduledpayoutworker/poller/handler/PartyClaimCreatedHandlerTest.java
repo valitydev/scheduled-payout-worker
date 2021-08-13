@@ -3,12 +3,15 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler;
 import com.rbkmoney.damsel.domain.BusinessScheduleRef;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
+import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.PartyClaimCreatedHandler;
 import com.rbkmoney.scheduledpayoutworker.service.SchedulatorService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
@@ -22,6 +25,9 @@ class PartyClaimCreatedHandlerTest {
     @Mock
     private SchedulatorService schedulatorService;
 
+    @Mock
+    private ShopMetaDao shopMetaDao;
+
     private PartyClaimCreatedHandler handler;
 
     private AutoCloseable mocks;
@@ -31,8 +37,12 @@ class PartyClaimCreatedHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new PartyClaimCreatedHandler(schedulatorService);
+        handler = new PartyClaimCreatedHandler(schedulatorService, shopMetaDao);
         preparedMocks = new Object[] {schedulatorService};
+        ShopMeta shopMeta = new ShopMeta();
+        shopMeta.setHasPaymentInstitutionAccPayTool(true);
+        Mockito.when(shopMetaDao.get(anyString(), anyString()))
+                .thenReturn(shopMeta);
     }
 
     @AfterEach
