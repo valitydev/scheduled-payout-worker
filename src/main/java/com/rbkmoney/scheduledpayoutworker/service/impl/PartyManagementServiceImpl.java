@@ -42,7 +42,7 @@ public class PartyManagementServiceImpl implements PartyManagementService {
     private Party getParty(String partyId, PartyRevisionParam partyRevisionParam) throws NotFoundException {
         log.info("Trying to get party, partyId='{}', partyRevisionParam='{}'", partyId, partyRevisionParam);
         try {
-            Party party = partyManagementClient.checkout(userInfo, partyId, partyRevisionParam);
+            Party party = partyManagementClient.get(userInfo, partyId);
             log.info("Party has been found, partyId='{}', partyRevisionParam='{}'", partyId, partyRevisionParam);
             return party;
         } catch (PartyNotFound ex) {
