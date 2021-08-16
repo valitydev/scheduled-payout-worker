@@ -44,6 +44,12 @@ public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessi
 
         String adjustmentId = invoicePaymentAdjustmentChange.getId();
 
+        if (adjustmentDao.get(invoiceId, paymentId, adjustmentId) == null) {
+            log.debug("Invoice adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
+                    invoiceId, paymentId, adjustmentId);
+            return;
+        }
+
         adjustmentDao.markAsCancelled(eventId, invoiceId, paymentId, adjustmentId);
         log.info("Adjustment have been cancelled, invoiceId={}, paymentId={}, adjustmentId={}",
                 invoiceId, paymentId, adjustmentId);

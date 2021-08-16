@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.domain.InvoicePaymentRefundStatus;
 import com.rbkmoney.damsel.domain.InvoicePaymentRefundSucceeded;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.Refund;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentRefundSucceededHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -55,7 +56,14 @@ class InvoicePaymentRefundSucceededHandlerTest {
                 .getPayload()
                 .getInvoicePaymentRefundChange();
 
+        when(refundDao
+                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentRefundChange.getId()))
+                .thenReturn(new Refund());
+
         handler.handle(change, event);
+
+        verify(refundDao, times(1))
+                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentRefundChange.getId());
         verify(refundDao, times(1))
                 .markAsSucceeded(eq(event.getEventId()), eq(event.getSourceId()), eq(invoicePaymentChange.getId()),
                         eq(invoicePaymentRefundChange.getId()), any());

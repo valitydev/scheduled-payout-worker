@@ -42,6 +42,12 @@ public class InvoicePaymentChargebackCancelledHandler implements PaymentProcessi
                 .getInvoicePaymentChargebackChange();
         String chargebackId = invoicePaymentChargebackChange.getId();
 
+        if (chargebackDao.get(invoiceId, paymentId, chargebackId) == null) {
+            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+                    invoiceId, paymentId, chargebackId);
+            return;
+        }
+
         chargebackDao.markAsCancelled(eventId, invoiceId, paymentId, chargebackId);
 
         log.info("Chargeback have been cancelled, invoiceId={}, paymentId={}, chargebackId={}",

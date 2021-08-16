@@ -29,6 +29,12 @@ public class InvoicePaymentCancelledHandler implements PaymentProcessingHandler 
         String invoiceId = event.getSourceId();
         String paymentId = invoiceChange.getInvoicePaymentChange().getId();
 
+        if (paymentDao.get(invoiceId, paymentId) == null) {
+            log.debug("Payment not found, invoiceId='{}', paymentId='{}'",
+                    invoiceId, paymentId);
+            return;
+        }
+
         paymentDao.markAsCancelled(eventId, invoiceId, paymentId);
         log.info("Payment have been cancelled, invoiceId={}, paymentId={}", invoiceId, paymentId);
     }

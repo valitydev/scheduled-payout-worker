@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.domain.InvoicePaymentAdjustmentCaptured;
 import com.rbkmoney.damsel.domain.InvoicePaymentAdjustmentStatus;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.Adjustment;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentAdjustmentCapturedHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -49,7 +50,14 @@ class InvoicePaymentAdjustmentCapturedHandlerTest {
     void handle() {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
+        when(adjustmentDao
+                .get(event.getSourceId(), change.getInvoicePaymentChange().getId(),
+                        change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getId()))
+                .thenReturn(new Adjustment());
         handler.handle(change, event);
+        verify(adjustmentDao, times(1))
+                .get(event.getSourceId(), change.getInvoicePaymentChange().getId(),
+                        change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getId());
         verify(adjustmentDao, times(1))
                 .markAsCaptured(eq(event.getEventId()),
                         eq(event.getSourceId()),

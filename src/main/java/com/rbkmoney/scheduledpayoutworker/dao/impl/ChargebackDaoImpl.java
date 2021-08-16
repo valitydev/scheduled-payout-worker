@@ -3,8 +3,8 @@ package com.rbkmoney.scheduledpayoutworker.dao.impl;
 import com.rbkmoney.payouter.domain.enums.ChargebackStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.payouter.domain.tables.records.ChargebackRecord;
-import com.rbkmoney.scheduledpayoutworker.dao.mapper.RecordRowMapper;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.mapper.RecordRowMapper;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import org.jooq.Query;
 import org.springframework.jdbc.core.RowMapper;
@@ -101,14 +101,6 @@ public class ChargebackDaoImpl extends AbstractGenericDao implements ChargebackD
                                 .and(CHARGEBACK.PAYOUT_ID.isNull())
                                 .and(CHARGEBACK.STATUS.eq(ChargebackStatus.SUCCEEDED))
                 );
-        return execute(query);
-    }
-
-    @Override
-    public int excludeFromPayout(String payoutId) throws DaoException {
-        Query query = getDslContext().update(CHARGEBACK)
-                .set(CHARGEBACK.PAYOUT_ID, (String) null)
-                .where(CHARGEBACK.PAYOUT_ID.eq(payoutId));
         return execute(query);
     }
 

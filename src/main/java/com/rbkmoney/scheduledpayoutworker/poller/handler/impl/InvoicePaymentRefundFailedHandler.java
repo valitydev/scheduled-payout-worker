@@ -42,6 +42,12 @@ public class InvoicePaymentRefundFailedHandler implements PaymentProcessingHandl
 
         String refundId = invoicePaymentRefundChange.getId();
 
+        if (refundDao.get(invoiceId, paymentId, refundId) == null) {
+            log.debug("Invoice refund not found, invoiceId='{}', paymentId='{}', refundId='{}'",
+                    invoiceId, paymentId, refundId);
+            return;
+        }
+
         refundDao.markAsFailed(eventId, invoiceId, paymentId, refundId);
         log.info("Refund have been failed, invoiceId={}, paymentId={}, refundId={}",
                 invoiceId, paymentId, refundId);

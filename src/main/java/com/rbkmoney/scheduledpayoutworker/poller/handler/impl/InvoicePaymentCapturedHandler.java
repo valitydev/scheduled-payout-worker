@@ -33,6 +33,12 @@ public class InvoicePaymentCapturedHandler implements PaymentProcessingHandler {
         String invoiceId = event.getSourceId();
         String paymentId = invoiceChange.getInvoicePaymentChange().getId();
 
+        if (paymentDao.get(invoiceId, paymentId) == null) {
+            log.debug("Payment not found, invoiceId='{}', paymentId='{}'",
+                    invoiceId, paymentId);
+            return;
+        }
+
         paymentDao.markAsCaptured(eventId, invoiceId, paymentId, capturedAt);
         log.info("Payment have been captured, invoiceId={}, paymentId={}", invoiceId, paymentId);
     }

@@ -43,6 +43,12 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
 
         String chargebackId = invoicePaymentChargebackChange.getId();
 
+        if (chargebackDao.get(invoiceId, paymentId, chargebackId) == null) {
+            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+                    invoiceId, paymentId, chargebackId);
+            return;
+        }
+
         chargebackDao.markAsRejected(eventId, invoiceId, paymentId, chargebackId);
 
         log.info("Chargeback have been rejected, invoiceId={}, paymentId={}, chargebackId={}",

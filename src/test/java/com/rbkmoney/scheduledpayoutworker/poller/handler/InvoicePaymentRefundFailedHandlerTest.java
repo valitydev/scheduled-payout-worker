@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.domain.InvoicePaymentRefundFailed;
 import com.rbkmoney.damsel.domain.InvoicePaymentRefundStatus;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.Refund;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentRefundFailedHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -54,9 +55,15 @@ class InvoicePaymentRefundFailedHandlerTest {
         InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange
                 .getPayload()
                 .getInvoicePaymentRefundChange();
+        when(refundDao
+                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentRefundChange.getId()))
+                .thenReturn(new Refund());
 
         handler.handle(change, event);
-        verify(refundDao, times(1)).markAsFailed(event.getEventId(), event.getSourceId(), invoicePaymentChange.getId(),
+        verify(refundDao, times(1))
+                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentRefundChange.getId());
+        verify(refundDao, times(1)).markAsFailed(event.getEventId(), event.getSourceId(),
+                invoicePaymentChange.getId(),
                 invoicePaymentRefundChange.getId());
     }
 

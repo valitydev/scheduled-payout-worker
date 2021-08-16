@@ -3,7 +3,6 @@ package com.rbkmoney.scheduledpayoutworker.dao;
 import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ShopMetaDao extends GenericDao {
@@ -30,7 +29,4 @@ public interface ShopMetaDao extends GenericDao {
     List<ShopMeta> getAllActiveShops() throws DaoException;
 
     void disableShop(String partyId, String shopId) throws DaoException;
-
-    void updateLastPayoutCreatedAt(String partyId, String shopId, LocalDateTime payoutCreatedAt) throws DaoException;
-
 }

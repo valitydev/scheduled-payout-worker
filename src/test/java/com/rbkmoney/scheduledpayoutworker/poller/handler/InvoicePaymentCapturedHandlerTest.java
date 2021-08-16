@@ -7,6 +7,7 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChangePayload;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentCapturedHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -53,7 +54,12 @@ class InvoicePaymentCapturedHandlerTest {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
 
+        when(paymentDao.get(event.getSourceId(), change.getInvoicePaymentChange().getId()))
+                .thenReturn(new Payment());
+
         handler.handle(change, event);
+        verify(paymentDao, times(1))
+                .get(event.getSourceId(), change.getInvoicePaymentChange().getId());
         verify(paymentDao, times(1))
                 .markAsCaptured(eq(event.getEventId()),
                         eq(event.getSourceId()),

@@ -48,6 +48,12 @@ public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessin
 
         String adjustmentId = invoicePaymentAdjustmentChange.getId();
 
+        if (adjustmentDao.get(invoiceId, paymentId, adjustmentId) == null) {
+            log.debug("Invoice adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
+                    invoiceId, paymentId, adjustmentId);
+            return;
+        }
+
         adjustmentDao.markAsCaptured(eventId, invoiceId, paymentId, adjustmentId, capturedAt);
         log.info("Adjustment have been captured, invoiceId={}, paymentId={}, adjustmentId={}",
                 invoiceId, paymentId, adjustmentId);

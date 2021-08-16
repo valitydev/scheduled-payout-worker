@@ -48,6 +48,12 @@ public class InvoicePaymentChargebackSuccededHandler implements PaymentProcessin
 
         String chargebackId = invoicePaymentChargebackChange.getId();
 
+        if (chargebackDao.get(invoiceId, paymentId, chargebackId) == null) {
+            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+                    invoiceId, paymentId, chargebackId);
+            return;
+        }
+
         LocalDateTime succeededAt = TypeUtil.stringToLocalDateTime(event.getCreatedAt());
         chargebackDao.markAsAccepted(eventId, invoiceId, paymentId, chargebackId, succeededAt);
         log.info("Chargeback have been accepted, invoiceId={}, paymentId={}, refundId={}",

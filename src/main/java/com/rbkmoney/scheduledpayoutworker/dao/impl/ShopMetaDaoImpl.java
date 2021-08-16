@@ -1,8 +1,8 @@
 package com.rbkmoney.scheduledpayoutworker.dao.impl;
 
 import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
-import com.rbkmoney.scheduledpayoutworker.dao.mapper.RecordRowMapper;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
+import com.rbkmoney.scheduledpayoutworker.dao.mapper.RecordRowMapper;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import org.jooq.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,16 +138,4 @@ public class ShopMetaDaoImpl extends AbstractGenericDao implements ShopMetaDao {
         executeOne(query);
     }
 
-    @Override
-    public void updateLastPayoutCreatedAt(String partyId, String shopId, LocalDateTime payoutCreatedAt)
-            throws DaoException {
-        Query query = getDslContext()
-                .update(SHOP_META)
-                .set(SHOP_META.LAST_PAYOUT_CREATED_AT, payoutCreatedAt)
-                .where(
-                        SHOP_META.PARTY_ID.eq(partyId)
-                                .and(SHOP_META.SHOP_ID.eq(shopId))
-                );
-        executeOne(query);
-    }
 }

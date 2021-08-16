@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.domain.InvoicePaymentChargebackRejected;
 import com.rbkmoney.damsel.domain.InvoicePaymentChargebackStatus;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentChargebackRejectedHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -53,8 +54,13 @@ class InvoicePaymentChargebackRejectedHandlerTest {
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         InvoicePaymentChargebackChange invoicePaymentChargebackChange = invoicePaymentChange.getPayload()
                 .getInvoicePaymentChargebackChange();
+        when(chargebackDao
+                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentChargebackChange.getId()))
+                .thenReturn(new Chargeback());
 
         handler.handle(change, event);
+        verify(chargebackDao, times(1))
+                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentChargebackChange.getId());
         verify(chargebackDao, times(1))
                 .markAsRejected(event.getEventId(), event.getSourceId(), invoicePaymentChange.getId(),
                         invoicePaymentChargebackChange.getId());
