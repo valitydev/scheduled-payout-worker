@@ -22,12 +22,11 @@ public class InvoicePaymentRefundSucceededHandler implements PaymentProcessingHa
 
     private final RefundDao refundDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .isSetInvoicePaymentRefundChange()
@@ -35,7 +34,8 @@ public class InvoicePaymentRefundSucceededHandler implements PaymentProcessingHa
                 .getInvoicePaymentRefundChange().getPayload().isSetInvoicePaymentRefundStatusChanged()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentRefundChange().getPayload()
-                .getInvoicePaymentRefundStatusChanged().getStatus().isSetSucceeded();
+                .getInvoicePaymentRefundStatusChanged().getStatus().isSetSucceeded()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -53,11 +53,9 @@ public class InvoicePaymentRefundSucceededHandler implements PaymentProcessingHa
 
         String refundId = invoicePaymentRefundChange.getId();
 
-        if (invoiceExists(invoiceId)) {
-            refundDao.markAsSucceeded(eventId, invoiceId, paymentId, refundId, succeededAt);
-            log.info("Refund have been succeeded, invoiceId={}, paymentId={}, refundId={}",
-                    invoiceId, paymentId, refundId);
-        }
+        refundDao.markAsSucceeded(eventId, invoiceId, paymentId, refundId, succeededAt);
+        log.info("Refund have been succeeded, invoiceId={}, paymentId={}, refundId={}",
+                invoiceId, paymentId, refundId);
     }
 
 }

@@ -47,7 +47,7 @@ class InvoicePaymentChargebackLevyChangedHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(invoiceChange()));
+        assertTrue(handler.accept(invoiceChange(), prepareEvent()));
     }
 
     @Test

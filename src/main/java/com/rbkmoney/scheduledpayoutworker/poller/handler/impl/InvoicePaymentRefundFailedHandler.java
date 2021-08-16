@@ -19,18 +19,18 @@ public class InvoicePaymentRefundFailedHandler implements PaymentProcessingHandl
 
     private final RefundDao refundDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentRefundChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentRefundChange().getPayload().isSetInvoicePaymentRefundStatusChanged()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentRefundChange().getPayload()
-                .getInvoicePaymentRefundStatusChanged().getStatus().isSetFailed();
+                .getInvoicePaymentRefundStatusChanged().getStatus().isSetFailed()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -47,11 +47,9 @@ public class InvoicePaymentRefundFailedHandler implements PaymentProcessingHandl
 
         String refundId = invoicePaymentRefundChange.getId();
 
-        if (invoiceExists(invoiceId)) {
-            refundDao.markAsFailed(eventId, invoiceId, paymentId, refundId);
-            log.info("Refund have been failed, invoiceId={}, paymentId={}, refundId={}",
-                    invoiceId, paymentId, refundId);
-        }
+        refundDao.markAsFailed(eventId, invoiceId, paymentId, refundId);
+        log.info("Refund have been failed, invoiceId={}, paymentId={}, refundId={}",
+                invoiceId, paymentId, refundId);
     }
 
 

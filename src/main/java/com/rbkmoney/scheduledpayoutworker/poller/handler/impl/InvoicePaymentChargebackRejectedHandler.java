@@ -19,11 +19,10 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
 
     private final ChargebackDao chargebackDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentChargebackChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
@@ -31,7 +30,8 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
                 .isSetInvoicePaymentChargebackStatusChanged()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentChargebackChange().getPayload()
-                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetRejected();
+                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetRejected()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -48,12 +48,11 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
 
         String chargebackId = invoicePaymentChargebackChange.getId();
 
-        if (invoiceExists(invoiceId)) {
-            chargebackDao.markAsRejected(eventId, invoiceId, paymentId, chargebackId);
+        chargebackDao.markAsRejected(eventId, invoiceId, paymentId, chargebackId);
 
-            log.info("Chargeback have been rejected, invoiceId={}, paymentId={}, chargebackId={}",
-                    invoiceId, paymentId, chargebackId);
-        }
+        log.info("Chargeback have been rejected, invoiceId={}, paymentId={}, chargebackId={}",
+                invoiceId, paymentId, chargebackId);
+
     }
 
 

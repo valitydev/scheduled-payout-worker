@@ -28,7 +28,7 @@ public class PaymentProcessingEventServiceImpl implements PaymentProcessingEvent
             log.info("Trying to save event, sourceId={}, eventId={}, eventCreatedAt={}",
                     machineEvent.getSourceId(), machineEvent.getEventId(), machineEvent.getCreatedAt());
             for (InvoiceChange change : eventPayload.getInvoiceChanges()) {
-                PaymentProcessingHandler handler = getHandler(change);
+                PaymentProcessingHandler handler = getHandler(change, machineEvent);
                 if (handler != null) {
                     log.debug("Trying to handle change, change='{}', sourceId='{}', eventId='{}'",
                             change, machineEvent.getSourceId(), machineEvent.getEventId());
@@ -46,9 +46,9 @@ public class PaymentProcessingEventServiceImpl implements PaymentProcessingEvent
         }
     }
 
-    private PaymentProcessingHandler getHandler(InvoiceChange change) {
+    private PaymentProcessingHandler getHandler(InvoiceChange change, MachineEvent machineEvent) {
         for (PaymentProcessingHandler handler : handlers) {
-            if (handler.accept(change)) {
+            if (handler.accept(change, machineEvent)) {
                 return handler;
             }
         }

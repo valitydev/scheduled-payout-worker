@@ -19,11 +19,10 @@ public class InvoicePaymentChargebackCancelledHandler implements PaymentProcessi
 
     private final ChargebackDao chargebackDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .isSetInvoicePaymentChargebackChange()
@@ -32,7 +31,8 @@ public class InvoicePaymentChargebackCancelledHandler implements PaymentProcessi
                 .isSetInvoicePaymentChargebackStatusChanged()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentChargebackChange().getPayload()
-                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetCancelled();
+                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetCancelled()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -47,12 +47,10 @@ public class InvoicePaymentChargebackCancelledHandler implements PaymentProcessi
                 .getInvoicePaymentChargebackChange();
         String chargebackId = invoicePaymentChargebackChange.getId();
 
-        if (invoiceExists(invoiceId)) {
-            chargebackDao.markAsCancelled(eventId, invoiceId, paymentId, chargebackId);
+        chargebackDao.markAsCancelled(eventId, invoiceId, paymentId, chargebackId);
 
-            log.info("Chargeback have been cancelled, invoiceId={}, paymentId={}, chargebackId={}",
-                    invoiceId, paymentId, chargebackId);
-        }
+        log.info("Chargeback have been cancelled, invoiceId={}, paymentId={}, chargebackId={}",
+                invoiceId, paymentId, chargebackId);
     }
 
 }

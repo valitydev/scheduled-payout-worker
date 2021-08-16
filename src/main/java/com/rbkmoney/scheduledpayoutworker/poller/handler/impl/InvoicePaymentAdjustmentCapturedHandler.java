@@ -8,7 +8,6 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,11 +21,10 @@ public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessin
 
     private final AdjustmentDao adjustmentDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
                 && invoiceChange
@@ -36,7 +34,8 @@ public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessin
                 && invoiceChange
                 .getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentAdjustmentChange().getPayload()
-                .getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCaptured();
+                .getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCaptured()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -53,11 +52,9 @@ public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessin
 
         String adjustmentId = invoicePaymentAdjustmentChange.getId();
 
-        if (invoiceExists(invoiceId)) {
-            adjustmentDao.markAsCaptured(eventId, invoiceId, paymentId, adjustmentId, capturedAt);
-            log.info("Adjustment have been captured, invoiceId={}, paymentId={}, adjustmentId={}",
-                    invoiceId, paymentId, adjustmentId);
-        }
+        adjustmentDao.markAsCaptured(eventId, invoiceId, paymentId, adjustmentId, capturedAt);
+        log.info("Adjustment have been captured, invoiceId={}, paymentId={}, adjustmentId={}",
+                invoiceId, paymentId, adjustmentId);
     }
 
 }

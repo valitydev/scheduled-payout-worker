@@ -35,7 +35,7 @@ public class InvoicePaymentRefundHandler implements PaymentProcessingHandler {
     private final PaymentDao paymentDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .isSetInvoicePaymentRefundChange()

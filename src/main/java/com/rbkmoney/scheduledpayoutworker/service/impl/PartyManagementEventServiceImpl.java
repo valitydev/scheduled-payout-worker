@@ -29,7 +29,7 @@ public class PartyManagementEventServiceImpl implements PartyManagementEventServ
         if (eventPayload != null && eventPayload.isSetChanges()) {
             for (PartyChange change : eventPayload.getChanges()) {
                 handlers.stream()
-                        .filter(handler -> handler.accept(change))
+                        .filter(handler -> handler.accept(change, event))
                         .forEach(handler -> handler.handle(change, event));
             }
             log.info("Event id have been saved, eventId={}, eventCreatedAt={}", eventId, createdAt);

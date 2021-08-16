@@ -45,7 +45,7 @@ class InvoicePaymentRefundHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(invoiceChange()));
+        assertTrue(handler.accept(invoiceChange(), prepareEvent()));
     }
 
     @Test

@@ -17,15 +17,15 @@ public class InvoicePaymentCancelledHandler implements PaymentProcessingHandler 
 
     private final PaymentDao paymentDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentStatusChanged()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
-                .getInvoicePaymentStatusChanged().getStatus().isSetCancelled();
+                .getInvoicePaymentStatusChanged().getStatus().isSetCancelled()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -34,10 +34,8 @@ public class InvoicePaymentCancelledHandler implements PaymentProcessingHandler 
         String invoiceId = event.getSourceId();
         String paymentId = invoiceChange.getInvoicePaymentChange().getId();
 
-        if (invoiceExists(invoiceId)) {
-            paymentDao.markAsCancelled(eventId, invoiceId, paymentId);
-            log.info("Payment have been cancelled, invoiceId={}, paymentId={}", invoiceId, paymentId);
-        }
+        paymentDao.markAsCancelled(eventId, invoiceId, paymentId);
+        log.info("Payment have been cancelled, invoiceId={}, paymentId={}", invoiceId, paymentId);
     }
 
 }

@@ -21,7 +21,7 @@ public class InvoicePaymentChargebackLevyChangedHandler implements PaymentProces
     private final ChargebackDao chargebackDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .isSetInvoicePaymentChargebackChange()

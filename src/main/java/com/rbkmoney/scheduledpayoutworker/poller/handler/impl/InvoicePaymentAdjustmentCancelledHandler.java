@@ -7,7 +7,6 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,11 +18,10 @@ public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessi
 
     private final AdjustmentDao adjustmentDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
                 && invoiceChange
@@ -33,7 +31,8 @@ public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessi
                 && invoiceChange
                 .getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentAdjustmentChange().getPayload()
-                .getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCancelled();
+                .getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCancelled()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -49,11 +48,9 @@ public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessi
 
         String adjustmentId = invoicePaymentAdjustmentChange.getId();
 
-        if (invoiceExists(invoiceId)) {
-            adjustmentDao.markAsCancelled(eventId, invoiceId, paymentId, adjustmentId);
-            log.info("Adjustment have been cancelled, invoiceId={}, paymentId={}, adjustmentId={}",
-                    invoiceId, paymentId, adjustmentId);
-        }
+        adjustmentDao.markAsCancelled(eventId, invoiceId, paymentId, adjustmentId);
+        log.info("Adjustment have been cancelled, invoiceId={}, paymentId={}, adjustmentId={}",
+                invoiceId, paymentId, adjustmentId);
     }
 
 }

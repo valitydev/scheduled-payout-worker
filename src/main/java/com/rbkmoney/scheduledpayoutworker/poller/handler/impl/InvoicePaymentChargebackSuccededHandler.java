@@ -23,11 +23,10 @@ public class InvoicePaymentChargebackSuccededHandler implements PaymentProcessin
 
     private final ChargebackDao chargebackDao;
 
-    @Getter
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .isSetInvoicePaymentChargebackChange()
@@ -36,7 +35,8 @@ public class InvoicePaymentChargebackSuccededHandler implements PaymentProcessin
                 .isSetInvoicePaymentChargebackStatusChanged()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentChargebackChange().getPayload()
-                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetAccepted();
+                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetAccepted()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -53,12 +53,10 @@ public class InvoicePaymentChargebackSuccededHandler implements PaymentProcessin
 
         String chargebackId = invoicePaymentChargebackChange.getId();
 
-        if (invoiceExists(invoiceId)) {
-            LocalDateTime succeededAt = TypeUtil.stringToLocalDateTime(event.getCreatedAt());
-            chargebackDao.markAsAccepted(eventId, invoiceId, paymentId, chargebackId, succeededAt);
-            log.info("Chargeback have been accepted, invoiceId={}, paymentId={}, refundId={}",
-                    invoiceId, paymentId, chargebackId);
-        }
+        LocalDateTime succeededAt = TypeUtil.stringToLocalDateTime(event.getCreatedAt());
+        chargebackDao.markAsAccepted(eventId, invoiceId, paymentId, chargebackId, succeededAt);
+        log.info("Chargeback have been accepted, invoiceId={}, paymentId={}, refundId={}",
+                invoiceId, paymentId, chargebackId);
     }
 
 }

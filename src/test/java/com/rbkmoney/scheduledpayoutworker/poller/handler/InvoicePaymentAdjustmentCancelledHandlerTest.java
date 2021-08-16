@@ -47,20 +47,20 @@ class InvoicePaymentAdjustmentCancelledHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(invoiceChange()));
+        MachineEvent event = prepareEvent();
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
+        assertTrue(handler.accept(invoiceChange(), event));
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
     }
 
     @Test
     void handle() {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
-        when(invoiceDao
-                .get(event.getSourceId()))
-                .thenReturn(new Invoice());
-
         handler.handle(change, event);
-        verify(invoiceDao, times(1))
-                .get(event.getSourceId());
         verify(adjustmentDao, times(1))
                 .markAsCancelled(event.getEventId(), event.getSourceId(), change.getInvoicePaymentChange().getId(),
                         change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getId());
