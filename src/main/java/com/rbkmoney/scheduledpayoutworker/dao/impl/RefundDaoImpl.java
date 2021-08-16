@@ -59,7 +59,7 @@ public class RefundDaoImpl extends AbstractGenericDao implements RefundDao {
                 .where(REFUND.INVOICE_ID.eq(invoiceId)
                         .and(REFUND.PAYMENT_ID.eq(paymentId)
                                 .and(REFUND.REFUND_ID.eq(refundId))));
-        execute(query);
+        executeOne(query);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class RefundDaoImpl extends AbstractGenericDao implements RefundDao {
                                 .and(REFUND.REFUND_ID.eq(refundId))
                                 .and(REFUND.PAYOUT_ID.isNull())
                 );
-        execute(query);
+        executeOne(query);
     }
 
     @Override
