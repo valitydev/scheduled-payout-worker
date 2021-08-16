@@ -6,7 +6,9 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,9 @@ import java.time.LocalDateTime;
 public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessingHandler {
 
     private final AdjustmentDao adjustmentDao;
+
+    @Getter
+    private final InvoiceDao invoiceDao;
 
     @Override
     public boolean accept(InvoiceChange invoiceChange) {
@@ -48,15 +53,11 @@ public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessin
 
         String adjustmentId = invoicePaymentAdjustmentChange.getId();
 
-        if (adjustmentDao.get(invoiceId, paymentId, adjustmentId) == null) {
-            log.debug("Invoice adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
+        if (invoiceExists(invoiceId)) {
+            adjustmentDao.markAsCaptured(eventId, invoiceId, paymentId, adjustmentId, capturedAt);
+            log.info("Adjustment have been captured, invoiceId={}, paymentId={}, adjustmentId={}",
                     invoiceId, paymentId, adjustmentId);
-            return;
         }
-
-        adjustmentDao.markAsCaptured(eventId, invoiceId, paymentId, adjustmentId, capturedAt);
-        log.info("Adjustment have been captured, invoiceId={}, paymentId={}, adjustmentId={}",
-                invoiceId, paymentId, adjustmentId);
     }
 
 }

@@ -7,7 +7,8 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChangePayload;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.payouter.domain.tables.pojos.Payment;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentCapturedHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -25,6 +26,9 @@ class InvoicePaymentCapturedHandlerTest {
     @Mock
     private PaymentDao paymentDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     private InvoicePaymentCapturedHandler handler;
 
     private AutoCloseable mocks;
@@ -34,7 +38,7 @@ class InvoicePaymentCapturedHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentCapturedHandler(paymentDao);
+        handler = new InvoicePaymentCapturedHandler(paymentDao, invoiceDao);
         preparedMocks = new Object[] {paymentDao};
     }
 
@@ -54,12 +58,13 @@ class InvoicePaymentCapturedHandlerTest {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
 
-        when(paymentDao.get(event.getSourceId(), change.getInvoicePaymentChange().getId()))
-                .thenReturn(new Payment());
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
 
         handler.handle(change, event);
-        verify(paymentDao, times(1))
-                .get(event.getSourceId(), change.getInvoicePaymentChange().getId());
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
         verify(paymentDao, times(1))
                 .markAsCaptured(eq(event.getEventId()),
                         eq(event.getSourceId()),

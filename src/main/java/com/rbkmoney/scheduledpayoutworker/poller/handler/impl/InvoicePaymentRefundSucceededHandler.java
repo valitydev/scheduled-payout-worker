@@ -5,8 +5,10 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundChange;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,9 @@ import java.time.LocalDateTime;
 public class InvoicePaymentRefundSucceededHandler implements PaymentProcessingHandler {
 
     private final RefundDao refundDao;
+
+    @Getter
+    private final InvoiceDao invoiceDao;
 
 
     @Override
@@ -48,15 +53,11 @@ public class InvoicePaymentRefundSucceededHandler implements PaymentProcessingHa
 
         String refundId = invoicePaymentRefundChange.getId();
 
-        if (refundDao.get(invoiceId, paymentId, refundId) == null) {
-            log.debug("Invoice refund not found, invoiceId='{}', paymentId='{}', refundId='{}'",
+        if (invoiceExists(invoiceId)) {
+            refundDao.markAsSucceeded(eventId, invoiceId, paymentId, refundId, succeededAt);
+            log.info("Refund have been succeeded, invoiceId={}, paymentId={}, refundId={}",
                     invoiceId, paymentId, refundId);
-            return;
         }
-
-        refundDao.markAsSucceeded(eventId, invoiceId, paymentId, refundId, succeededAt);
-        log.info("Refund have been succeeded, invoiceId={}, paymentId={}, refundId={}",
-                invoiceId, paymentId, refundId);
     }
 
 }

@@ -3,8 +3,10 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler.impl;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,9 @@ import java.time.LocalDateTime;
 public class InvoicePaymentCapturedHandler implements PaymentProcessingHandler {
 
     private final PaymentDao paymentDao;
+
+    @Getter
+    private final InvoiceDao invoiceDao;
 
     @Override
     public boolean accept(InvoiceChange invoiceChange) {
@@ -33,14 +38,10 @@ public class InvoicePaymentCapturedHandler implements PaymentProcessingHandler {
         String invoiceId = event.getSourceId();
         String paymentId = invoiceChange.getInvoicePaymentChange().getId();
 
-        if (paymentDao.get(invoiceId, paymentId) == null) {
-            log.debug("Payment not found, invoiceId='{}', paymentId='{}'",
-                    invoiceId, paymentId);
-            return;
+        if (invoiceExists(invoiceId)) {
+            paymentDao.markAsCaptured(eventId, invoiceId, paymentId, capturedAt);
+            log.info("Payment have been captured, invoiceId={}, paymentId={}", invoiceId, paymentId);
         }
-
-        paymentDao.markAsCaptured(eventId, invoiceId, paymentId, capturedAt);
-        log.info("Payment have been captured, invoiceId={}, paymentId={}", invoiceId, paymentId);
     }
 
 }

@@ -4,7 +4,8 @@ import com.rbkmoney.damsel.domain.InvoicePaymentRefundFailed;
 import com.rbkmoney.damsel.domain.InvoicePaymentRefundStatus;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.payouter.domain.tables.pojos.Refund;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentRefundFailedHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -22,6 +23,9 @@ class InvoicePaymentRefundFailedHandlerTest {
     @Mock
     private RefundDao refundDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     private InvoicePaymentRefundFailedHandler handler;
 
     private AutoCloseable mocks;
@@ -31,7 +35,7 @@ class InvoicePaymentRefundFailedHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentRefundFailedHandler(refundDao);
+        handler = new InvoicePaymentRefundFailedHandler(refundDao, invoiceDao);
         preparedMocks = new Object[] {refundDao};
     }
 
@@ -55,13 +59,13 @@ class InvoicePaymentRefundFailedHandlerTest {
         InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange
                 .getPayload()
                 .getInvoicePaymentRefundChange();
-        when(refundDao
-                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentRefundChange.getId()))
-                .thenReturn(new Refund());
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
 
         handler.handle(change, event);
-        verify(refundDao, times(1))
-                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentRefundChange.getId());
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
         verify(refundDao, times(1)).markAsFailed(event.getEventId(), event.getSourceId(),
                 invoicePaymentChange.getId(),
                 invoicePaymentRefundChange.getId());

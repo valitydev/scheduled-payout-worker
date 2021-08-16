@@ -4,8 +4,9 @@ import com.rbkmoney.damsel.domain.InvoicePaymentChargebackRejected;
 import com.rbkmoney.damsel.domain.InvoicePaymentChargebackStatus;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentChargebackRejectedHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,9 @@ class InvoicePaymentChargebackRejectedHandlerTest {
     @Mock
     private ChargebackDao chargebackDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     private InvoicePaymentChargebackRejectedHandler handler;
 
     private AutoCloseable mocks;
@@ -31,7 +35,7 @@ class InvoicePaymentChargebackRejectedHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentChargebackRejectedHandler(chargebackDao);
+        handler = new InvoicePaymentChargebackRejectedHandler(chargebackDao, invoiceDao);
         preparedMocks = new Object[] {chargebackDao};
     }
 
@@ -54,13 +58,13 @@ class InvoicePaymentChargebackRejectedHandlerTest {
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         InvoicePaymentChargebackChange invoicePaymentChargebackChange = invoicePaymentChange.getPayload()
                 .getInvoicePaymentChargebackChange();
-        when(chargebackDao
-                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentChargebackChange.getId()))
-                .thenReturn(new Chargeback());
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
 
         handler.handle(change, event);
-        verify(chargebackDao, times(1))
-                .get(event.getSourceId(), invoicePaymentChange.getId(), invoicePaymentChargebackChange.getId());
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
         verify(chargebackDao, times(1))
                 .markAsRejected(event.getEventId(), event.getSourceId(), invoicePaymentChange.getId(),
                         invoicePaymentChargebackChange.getId());

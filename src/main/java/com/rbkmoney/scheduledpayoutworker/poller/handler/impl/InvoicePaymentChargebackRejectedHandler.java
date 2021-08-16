@@ -5,7 +5,9 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,9 @@ import org.springframework.stereotype.Component;
 public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessingHandler {
 
     private final ChargebackDao chargebackDao;
+
+    @Getter
+    private final InvoiceDao invoiceDao;
 
     @Override
     public boolean accept(InvoiceChange invoiceChange) {
@@ -43,16 +48,12 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
 
         String chargebackId = invoicePaymentChargebackChange.getId();
 
-        if (chargebackDao.get(invoiceId, paymentId, chargebackId) == null) {
-            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+        if (invoiceExists(invoiceId)) {
+            chargebackDao.markAsRejected(eventId, invoiceId, paymentId, chargebackId);
+
+            log.info("Chargeback have been rejected, invoiceId={}, paymentId={}, chargebackId={}",
                     invoiceId, paymentId, chargebackId);
-            return;
         }
-
-        chargebackDao.markAsRejected(eventId, invoiceId, paymentId, chargebackId);
-
-        log.info("Chargeback have been rejected, invoiceId={}, paymentId={}, chargebackId={}",
-                invoiceId, paymentId, chargebackId);
     }
 
 

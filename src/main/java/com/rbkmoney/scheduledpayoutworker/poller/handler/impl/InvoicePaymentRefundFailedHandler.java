@@ -4,8 +4,10 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,9 @@ import org.springframework.stereotype.Component;
 public class InvoicePaymentRefundFailedHandler implements PaymentProcessingHandler {
 
     private final RefundDao refundDao;
+
+    @Getter
+    private final InvoiceDao invoiceDao;
 
     @Override
     public boolean accept(InvoiceChange invoiceChange) {
@@ -42,15 +47,11 @@ public class InvoicePaymentRefundFailedHandler implements PaymentProcessingHandl
 
         String refundId = invoicePaymentRefundChange.getId();
 
-        if (refundDao.get(invoiceId, paymentId, refundId) == null) {
-            log.debug("Invoice refund not found, invoiceId='{}', paymentId='{}', refundId='{}'",
+        if (invoiceExists(invoiceId)) {
+            refundDao.markAsFailed(eventId, invoiceId, paymentId, refundId);
+            log.info("Refund have been failed, invoiceId={}, paymentId={}, refundId={}",
                     invoiceId, paymentId, refundId);
-            return;
         }
-
-        refundDao.markAsFailed(eventId, invoiceId, paymentId, refundId);
-        log.info("Refund have been failed, invoiceId={}, paymentId={}, refundId={}",
-                invoiceId, paymentId, refundId);
     }
 
 

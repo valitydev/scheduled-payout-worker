@@ -4,8 +4,9 @@ import com.rbkmoney.damsel.domain.InvoicePaymentChargebackAccepted;
 import com.rbkmoney.damsel.domain.InvoicePaymentChargebackStatus;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentChargebackSuccededHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,9 @@ class InvoicePaymentChargebackSuccededHandlerTest {
     @Mock
     private ChargebackDao chargebackDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     private InvoicePaymentChargebackSuccededHandler handler;
 
     private AutoCloseable mocks;
@@ -31,7 +35,7 @@ class InvoicePaymentChargebackSuccededHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentChargebackSuccededHandler(chargebackDao);
+        handler = new InvoicePaymentChargebackSuccededHandler(chargebackDao, invoiceDao);
         preparedMocks = new Object[] {chargebackDao};
     }
 
@@ -52,15 +56,13 @@ class InvoicePaymentChargebackSuccededHandlerTest {
         MachineEvent event = prepareEvent();
 
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
-        when(chargebackDao
-                .get(event.getSourceId(), invoicePaymentChange.getId(),
-                        invoicePaymentChange.getPayload().getInvoicePaymentChargebackChange().getId()))
-                .thenReturn(new Chargeback());
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
 
         handler.handle(change, event);
-        verify(chargebackDao, times(1))
-                .get(event.getSourceId(), invoicePaymentChange.getId(),
-                        invoicePaymentChange.getPayload().getInvoicePaymentChargebackChange().getId());
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
 
         InvoicePaymentChargebackChange invoicePaymentChargebackChange = invoicePaymentChange.getPayload()
                 .getInvoicePaymentChargebackChange();

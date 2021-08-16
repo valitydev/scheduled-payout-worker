@@ -6,7 +6,9 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackChange;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,9 @@ public class InvoicePaymentChargebackSuccededHandler implements PaymentProcessin
 
 
     private final ChargebackDao chargebackDao;
+
+    @Getter
+    private final InvoiceDao invoiceDao;
 
     @Override
     public boolean accept(InvoiceChange invoiceChange) {
@@ -48,16 +53,12 @@ public class InvoicePaymentChargebackSuccededHandler implements PaymentProcessin
 
         String chargebackId = invoicePaymentChargebackChange.getId();
 
-        if (chargebackDao.get(invoiceId, paymentId, chargebackId) == null) {
-            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
+        if (invoiceExists(invoiceId)) {
+            LocalDateTime succeededAt = TypeUtil.stringToLocalDateTime(event.getCreatedAt());
+            chargebackDao.markAsAccepted(eventId, invoiceId, paymentId, chargebackId, succeededAt);
+            log.info("Chargeback have been accepted, invoiceId={}, paymentId={}, refundId={}",
                     invoiceId, paymentId, chargebackId);
-            return;
         }
-
-        LocalDateTime succeededAt = TypeUtil.stringToLocalDateTime(event.getCreatedAt());
-        chargebackDao.markAsAccepted(eventId, invoiceId, paymentId, chargebackId, succeededAt);
-        log.info("Chargeback have been accepted, invoiceId={}, paymentId={}, refundId={}",
-                invoiceId, paymentId, chargebackId);
     }
 
 }

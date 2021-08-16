@@ -7,7 +7,8 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChangePayload;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.payouter.domain.tables.pojos.Payment;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentCancelledHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -25,6 +26,9 @@ class InvoicePaymentCancelledHandlerTest {
     @Mock
     private PaymentDao paymentDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     private InvoicePaymentCancelledHandler handler;
 
     private AutoCloseable mocks;
@@ -34,7 +38,7 @@ class InvoicePaymentCancelledHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentCancelledHandler(paymentDao);
+        handler = new InvoicePaymentCancelledHandler(paymentDao, invoiceDao);
         preparedMocks = new Object[] {paymentDao};
     }
 
@@ -53,13 +57,13 @@ class InvoicePaymentCancelledHandlerTest {
     void handle() {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
-        when(paymentDao
-                .get(event.getSourceId(), change.getInvoicePaymentChange().getId()))
-                .thenReturn(new Payment());
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
 
         handler.handle(change, event);
-        verify(paymentDao, times(1))
-                .get(event.getSourceId(), change.getInvoicePaymentChange().getId());
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
         verify(paymentDao, times(1))
                 .markAsCancelled(event.getEventId(), event.getSourceId(), change.getInvoicePaymentChange().getId());
 

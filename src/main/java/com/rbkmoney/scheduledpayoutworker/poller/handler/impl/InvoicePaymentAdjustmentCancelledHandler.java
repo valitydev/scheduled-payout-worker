@@ -5,7 +5,9 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentAdjustmentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,9 @@ import org.springframework.stereotype.Component;
 public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessingHandler {
 
     private final AdjustmentDao adjustmentDao;
+
+    @Getter
+    private final InvoiceDao invoiceDao;
 
     @Override
     public boolean accept(InvoiceChange invoiceChange) {
@@ -44,15 +49,11 @@ public class InvoicePaymentAdjustmentCancelledHandler implements PaymentProcessi
 
         String adjustmentId = invoicePaymentAdjustmentChange.getId();
 
-        if (adjustmentDao.get(invoiceId, paymentId, adjustmentId) == null) {
-            log.debug("Invoice adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
+        if (invoiceExists(invoiceId)) {
+            adjustmentDao.markAsCancelled(eventId, invoiceId, paymentId, adjustmentId);
+            log.info("Adjustment have been cancelled, invoiceId={}, paymentId={}, adjustmentId={}",
                     invoiceId, paymentId, adjustmentId);
-            return;
         }
-
-        adjustmentDao.markAsCancelled(eventId, invoiceId, paymentId, adjustmentId);
-        log.info("Adjustment have been cancelled, invoiceId={}, paymentId={}, adjustmentId={}",
-                invoiceId, paymentId, adjustmentId);
     }
 
 }
