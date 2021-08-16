@@ -5,6 +5,7 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +18,10 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
 
     private final ChargebackDao chargebackDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentChargebackChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
@@ -26,7 +29,8 @@ public class InvoicePaymentChargebackRejectedHandler implements PaymentProcessin
                 .isSetInvoicePaymentChargebackStatusChanged()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentChargebackChange().getPayload()
-                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetRejected();
+                .getInvoicePaymentChargebackStatusChanged().getStatus().isSetRejected()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override

@@ -4,7 +4,9 @@ import com.rbkmoney.damsel.domain.Cash;
 import com.rbkmoney.damsel.domain.CurrencyRef;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentCaptureStartedHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -22,6 +24,9 @@ class InvoicePaymentCaptureStartedHandlerTest {
     @Mock
     private PaymentDao paymentDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     private InvoicePaymentCaptureStartedHandler handler;
 
     private AutoCloseable mocks;
@@ -31,7 +36,7 @@ class InvoicePaymentCaptureStartedHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentCaptureStartedHandler(paymentDao);
+        handler = new InvoicePaymentCaptureStartedHandler(paymentDao, invoiceDao);
         preparedMocks = new Object[] {paymentDao};
     }
 
@@ -43,7 +48,13 @@ class InvoicePaymentCaptureStartedHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(invoiceChange()));
+        MachineEvent event = prepareEvent();
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
+        assertTrue(handler.accept(invoiceChange(), event));
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
     }
 
     @Test

@@ -4,7 +4,9 @@ import com.rbkmoney.damsel.domain.Cash;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentChargebackLevyChangedHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,9 @@ class InvoicePaymentChargebackLevyChangedHandlerTest {
     @Mock
     private ChargebackDao chargebackDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     @Captor
     private ArgumentCaptor<Chargeback> chargebackArgumentCaptor;
 
@@ -35,7 +40,7 @@ class InvoicePaymentChargebackLevyChangedHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentChargebackLevyChangedHandler(chargebackDao);
+        handler = new InvoicePaymentChargebackLevyChangedHandler(chargebackDao, invoiceDao);
         preparedMocks = new Object[] {chargebackDao};
     }
 
@@ -47,7 +52,13 @@ class InvoicePaymentChargebackLevyChangedHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(invoiceChange()));
+        MachineEvent event = prepareEvent();
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
+        assertTrue(handler.accept(invoiceChange(), event));
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
     }
 
     @Test

@@ -49,7 +49,7 @@ class ShopPayoutToolChangedHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(preparePartyChange()));
+        assertTrue(handler.accept(preparePartyChange(), prepareEvent()));
     }
 
     @Test

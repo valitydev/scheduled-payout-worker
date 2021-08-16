@@ -6,6 +6,7 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,10 @@ public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessin
 
     private final AdjustmentDao adjustmentDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
                 && invoiceChange
@@ -31,7 +34,8 @@ public class InvoicePaymentAdjustmentCapturedHandler implements PaymentProcessin
                 && invoiceChange
                 .getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentAdjustmentChange().getPayload()
-                .getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCaptured();
+                .getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCaptured()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override

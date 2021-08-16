@@ -11,8 +11,6 @@ public interface PaymentDao extends GenericDao {
 
     Payment get(String invoiceId, String paymentId) throws DaoException;
 
-    int excludeFromPayout(String payoutId) throws DaoException;
-
     int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime from, LocalDateTime to)
             throws DaoException;
 

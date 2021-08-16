@@ -20,7 +20,4 @@ public interface ChargebackDao extends GenericDao {
 
     int includeUnpaid(String payoutId, String partyId, String shopId, LocalDateTime from, LocalDateTime to)
             throws DaoException;
-
-    int excludeFromPayout(String payoutId) throws DaoException;
-
 }

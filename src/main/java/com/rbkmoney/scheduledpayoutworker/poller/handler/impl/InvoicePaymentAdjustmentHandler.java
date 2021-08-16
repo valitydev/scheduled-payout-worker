@@ -10,7 +10,9 @@ import com.rbkmoney.payouter.domain.enums.AdjustmentStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Adjustment;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +28,17 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
 
     private final PaymentDao paymentDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
                 && invoiceChange
                 .getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentAdjustmentChange().getPayload()
-                .isSetInvoicePaymentAdjustmentCreated();
+                .isSetInvoicePaymentAdjustmentCreated()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -52,9 +57,9 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
 
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            log.debug("Payment on adjustment not found, invoiceId='{}', paymentId='{}', adjustmentId='{}'",
-                    invoiceId, paymentId, invoicePaymentAdjustment.getId());
-            return;
+            throw new NotFoundException(
+                    String.format("Payment on adjustment not found, invoiceId='%s', paymentId='%s', adjustmentId='%s'",
+                            invoiceId, paymentId, invoicePaymentAdjustment.getId()));
         }
 
         Adjustment adjustment = new Adjustment();

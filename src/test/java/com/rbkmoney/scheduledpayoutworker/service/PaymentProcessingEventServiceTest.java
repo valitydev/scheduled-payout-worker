@@ -45,9 +45,9 @@ class PaymentProcessingEventServiceTest {
         EventPayload eventData = prepareEventPayload();
         MachineEvent machineEvent = prepareMachineEvent();
         InvoiceChange change = eventData.getInvoiceChanges().get(0);
-        when(handler.accept(change)).thenReturn(true);
+        when(handler.accept(change, machineEvent)).thenReturn(true);
         service.processEvent(machineEvent, eventData);
-        verify(handler, times(1)).accept(change);
+        verify(handler, times(1)).accept(change, machineEvent);
         verify(handler, times(1)).handle(change, machineEvent);
     }
 

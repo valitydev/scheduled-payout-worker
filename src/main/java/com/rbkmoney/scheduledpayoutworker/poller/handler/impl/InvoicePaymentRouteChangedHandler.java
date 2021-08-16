@@ -5,7 +5,9 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +20,13 @@ public class InvoicePaymentRouteChangedHandler implements PaymentProcessingHandl
 
     private final PaymentDao paymentDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
-                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentRouteChanged();
+                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentRouteChanged()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -31,8 +36,9 @@ public class InvoicePaymentRouteChangedHandler implements PaymentProcessingHandl
         String paymentId = invoicePaymentChange.getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            log.debug("Invoice on payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
-            return;
+            throw new NotFoundException(
+                    String.format("Invoice on payment not found, invoiceId='%s', paymentId='%s'", invoiceId,
+                            paymentId));
         }
 
         PaymentRoute paymentRoute = invoicePaymentChange.getPayload().getInvoicePaymentRouteChanged().getRoute();

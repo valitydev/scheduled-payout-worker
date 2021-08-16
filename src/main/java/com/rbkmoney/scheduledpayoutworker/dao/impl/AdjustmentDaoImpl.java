@@ -3,8 +3,8 @@ package com.rbkmoney.scheduledpayoutworker.dao.impl;
 import com.rbkmoney.payouter.domain.enums.AdjustmentStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Adjustment;
 import com.rbkmoney.payouter.domain.tables.records.AdjustmentRecord;
-import com.rbkmoney.scheduledpayoutworker.dao.mapper.RecordRowMapper;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
+import com.rbkmoney.scheduledpayoutworker.dao.mapper.RecordRowMapper;
 import com.rbkmoney.scheduledpayoutworker.exception.DaoException;
 import org.jooq.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,14 +86,6 @@ public class AdjustmentDaoImpl extends AbstractGenericDao implements AdjustmentD
                                 .and(ADJUSTMENT.PAYOUT_ID.isNull())
                 );
 
-        return execute(query);
-    }
-
-    @Override
-    public int excludeFromPayout(String payoutId) throws DaoException {
-        Query query = getDslContext().update(ADJUSTMENT)
-                .set(ADJUSTMENT.PAYOUT_ID, (String) null)
-                .where(ADJUSTMENT.PAYOUT_ID.eq(payoutId));
         return execute(query);
     }
 

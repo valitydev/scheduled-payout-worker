@@ -11,8 +11,10 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.enums.RefundStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.payouter.domain.tables.pojos.Refund;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.CashFlowType;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
@@ -34,13 +36,16 @@ public class InvoicePaymentRefundHandler implements PaymentProcessingHandler {
 
     private final PaymentDao paymentDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .isSetInvoicePaymentRefundChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
-                .getInvoicePaymentRefundChange().getPayload().isSetInvoicePaymentRefundCreated();
+                .getInvoicePaymentRefundChange().getPayload().isSetInvoicePaymentRefundCreated()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override
@@ -67,9 +72,9 @@ public class InvoicePaymentRefundHandler implements PaymentProcessingHandler {
         Payment payment = paymentDao.get(invoiceId, paymentId);
 
         if (payment == null) {
-            log.debug("Payment on refund not found, invoiceId='{}', paymentId='{}', refundId='{}'",
-                    invoiceId, paymentId, invoicePaymentRefund.getId());
-            return;
+            throw new NotFoundException(
+                    String.format("Payment on refund not found, invoiceId='%s', paymentId='%s', refundId='%s'",
+                            invoiceId, paymentId, invoicePaymentRefund.getId()));
         }
 
         refund.setPartyId(payment.getPartyId());

@@ -23,7 +23,7 @@ public class InvoiceHandler implements PaymentProcessingHandler {
     private final InvoiceDao invoiceDao;
 
     @Override
-    public boolean accept(InvoiceChange invoiceChange) {
+    public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoiceCreated();
     }
 

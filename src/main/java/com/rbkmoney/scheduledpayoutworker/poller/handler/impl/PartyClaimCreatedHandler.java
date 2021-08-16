@@ -24,7 +24,7 @@ public class PartyClaimCreatedHandler implements PartyManagementHandler {
     private final ShopMetaDao shopMetaDao;
 
     @Override
-    public boolean accept(PartyChange change) {
+    public boolean accept(PartyChange change, MachineEvent event) {
         return DamselUtil.isClaimAccepted(change);
     }
 

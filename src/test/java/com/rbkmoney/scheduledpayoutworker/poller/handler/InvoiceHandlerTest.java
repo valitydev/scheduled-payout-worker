@@ -3,6 +3,7 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler;
 import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoiceCreated;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.ShopMeta;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
@@ -46,7 +47,7 @@ class InvoiceHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(prepareHandleInput()));
+        assertTrue(handler.accept(prepareHandleInput(), prepareEvent()));
     }
 
     @Test
@@ -84,6 +85,11 @@ class InvoiceHandlerTest {
         invoiceCreated.setInvoice(invoice);
         invoiceChange.setInvoiceCreated(invoiceCreated);
         return invoiceChange;
+    }
+
+    private MachineEvent prepareEvent() {
+        MachineEvent event = fillTBaseObject(new MachineEvent(), MachineEvent.class);
+        return event;
     }
 
 
