@@ -51,10 +51,10 @@ class PartyManagementServiceTest {
     void getParty() throws TException {
         String partyId = generateRandomStringId();
         Party party = prepareParty(partyId, null, null);
-        when(partyManagementClient.checkout(notNull(), eq(partyId), notNull())).thenReturn(party);
+        when(partyManagementClient.get(notNull(), eq(partyId))).thenReturn(party);
         Party actualParty = service.getParty(partyId);
         assertEquals(party, actualParty);
-        verify(partyManagementClient, times(1)).checkout(notNull(), eq(partyId), notNull());
+        verify(partyManagementClient, times(1)).get(notNull(), eq(partyId));
     }
 
     @Test
@@ -64,10 +64,10 @@ class PartyManagementServiceTest {
         Party party = prepareParty(partyId, shopId, null);
         Shop shop = party.getShops().get(shopId);
 
-        when(partyManagementClient.checkout(notNull(), eq(partyId), notNull())).thenReturn(party);
+        when(partyManagementClient.get(notNull(), eq(partyId))).thenReturn(party);
         Shop actualShop = service.getShop(partyId, shopId);
         assertEquals(shop, actualShop);
-        verify(partyManagementClient, times(1)).checkout(notNull(), eq(partyId), notNull());
+        verify(partyManagementClient, times(1)).get(notNull(), eq(partyId));
     }
 
     @Test
@@ -76,10 +76,10 @@ class PartyManagementServiceTest {
         String contractId = generateRandomStringId();
         Party party = prepareParty(partyId, null, contractId);
         PaymentInstitutionRef paymentInstitutionRef = party.getContracts().get(contractId).getPaymentInstitution();
-        when(partyManagementClient.checkout(notNull(), eq(partyId), notNull())).thenReturn(party);
+        when(partyManagementClient.get(notNull(), eq(partyId))).thenReturn(party);
         PaymentInstitutionRef actualPaymentInstitutionRef = service.getPaymentInstitutionRef(partyId, contractId);
         assertEquals(paymentInstitutionRef, actualPaymentInstitutionRef);
-        verify(partyManagementClient, times(1)).checkout(notNull(), eq(partyId), notNull());
+        verify(partyManagementClient, times(1)).get(notNull(), eq(partyId));
     }
 
     private Party prepareParty(String partyId, String shopId, String contractId) {
