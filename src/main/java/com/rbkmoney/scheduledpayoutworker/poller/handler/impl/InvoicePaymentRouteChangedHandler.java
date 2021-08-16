@@ -7,6 +7,7 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,9 @@ public class InvoicePaymentRouteChangedHandler implements PaymentProcessingHandl
         String paymentId = invoicePaymentChange.getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            log.debug("Invoice on payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
-            return;
+            throw new NotFoundException(
+                    String.format("Invoice on payment not found, invoiceId='%s', paymentId='%s'", invoiceId,
+                            paymentId));
         }
 
         PaymentRoute paymentRoute = invoicePaymentChange.getPayload().getInvoicePaymentRouteChanged().getRoute();

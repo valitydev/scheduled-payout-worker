@@ -9,6 +9,7 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,9 +48,9 @@ public class InvoicePaymentChargebackBodyChangedHandler implements PaymentProces
 
         Chargeback chargeback = chargebackDao.get(invoiceId, paymentId, chargebackId);
         if (chargeback == null) {
-            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
-                    invoiceId, paymentId, chargebackId);
-            return;
+            throw new NotFoundException(
+                    String.format("Invoice chargeback not found, invoiceId='%s', paymentId='%s', chargebackId='%s'",
+                            invoiceId, paymentId, chargebackId));
         }
 
         InvoicePaymentChargebackBodyChanged invoicePaymentChargebackBodyChanged =

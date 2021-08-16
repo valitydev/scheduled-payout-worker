@@ -6,6 +6,7 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,8 @@ public class InvoicePaymentCaptureStartedHandler implements PaymentProcessingHan
         String paymentId = invoiceChange.getInvoicePaymentChange().getId();
         Payment payment = paymentDao.get(invoiceId, paymentId);
         if (payment == null) {
-            log.debug("Invoice payment not found, invoiceId='{}', paymentId='{}'", invoiceId, paymentId);
-            return;
+            throw new NotFoundException(
+                    String.format("Invoice payment not found, invoiceId='%s', paymentId='%s'", invoiceId, paymentId));
         }
         InvoicePaymentCaptureStarted invoicePaymentCaptureStarted = invoiceChange.getInvoicePaymentChange()
                 .getPayload()

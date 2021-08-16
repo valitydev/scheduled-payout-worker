@@ -8,6 +8,7 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
 import lombok.RequiredArgsConstructor;
@@ -51,9 +52,9 @@ public class InvoicePaymentChargebackCashFlowChangedHandler implements PaymentPr
 
         Chargeback chargeback = chargebackDao.get(invoiceId, paymentId, chargebackId);
         if (chargeback == null) {
-            log.debug("Invoice chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
-                    invoiceId, paymentId, chargebackId);
-            return;
+            throw new NotFoundException(
+                    String.format("Invoice chargeback not found, invoiceId='%s', paymentId='%s', chargebackId='%s'",
+                            invoiceId, paymentId, chargebackId));
         }
 
         long merchantAmount = DamselUtil.computeMerchantAmount(invoicePaymentChargebackCashFlowChanged.getCashFlow());

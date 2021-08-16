@@ -16,6 +16,7 @@ import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
 import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
+import com.rbkmoney.scheduledpayoutworker.exception.NotFoundException;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,9 +62,9 @@ public class InvoicePaymentChargebackHandler implements PaymentProcessingHandler
         Payment payment = paymentDao.get(invoiceId, paymentId);
 
         if (payment == null) {
-            log.debug("Payment on chargeback not found, invoiceId='{}', paymentId='{}', chargebackId='{}'",
-                    invoiceId, paymentId, invoicePaymentChargeback.getId());
-            return;
+            throw new NotFoundException(
+                    String.format("Payment on chargeback not found, invoiceId='%s', paymentId='%s', chargebackId='%s'",
+                            invoiceId, paymentId, invoicePaymentChargeback.getId()));
         }
 
         Chargeback chargeback = new Chargeback();
