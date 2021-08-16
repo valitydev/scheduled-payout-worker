@@ -55,7 +55,6 @@ class InvoicePaymentChargebackCancelledHandlerTest {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
 
-        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         when(invoiceDao
                 .get(event.getSourceId()))
                 .thenReturn(new Invoice());
@@ -63,6 +62,8 @@ class InvoicePaymentChargebackCancelledHandlerTest {
         handler.handle(change, event);
         verify(invoiceDao, times(1))
                 .get(event.getSourceId());
+
+        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         verify(chargebackDao, times(1))
                 .markAsCancelled(event.getEventId(), event.getSourceId(), invoicePaymentChange.getId(),
                         invoicePaymentChange.getPayload().getInvoicePaymentChargebackChange().getId());

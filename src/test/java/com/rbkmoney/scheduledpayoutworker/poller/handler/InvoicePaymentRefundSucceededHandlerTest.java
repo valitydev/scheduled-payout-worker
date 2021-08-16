@@ -55,11 +55,6 @@ class InvoicePaymentRefundSucceededHandlerTest {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
 
-        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
-        InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange
-                .getPayload()
-                .getInvoicePaymentRefundChange();
-
         when(invoiceDao
                 .get(event.getSourceId()))
                 .thenReturn(new Invoice());
@@ -67,6 +62,11 @@ class InvoicePaymentRefundSucceededHandlerTest {
         handler.handle(change, event);
         verify(invoiceDao, times(1))
                 .get(event.getSourceId());
+
+        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
+        InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange
+                .getPayload()
+                .getInvoicePaymentRefundChange();
         verify(refundDao, times(1))
                 .markAsSucceeded(eq(event.getEventId()), eq(event.getSourceId()), eq(invoicePaymentChange.getId()),
                         eq(invoicePaymentRefundChange.getId()), any());

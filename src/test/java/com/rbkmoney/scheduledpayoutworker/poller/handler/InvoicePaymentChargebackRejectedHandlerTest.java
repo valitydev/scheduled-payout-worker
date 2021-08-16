@@ -55,9 +55,6 @@ class InvoicePaymentChargebackRejectedHandlerTest {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
 
-        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
-        InvoicePaymentChargebackChange invoicePaymentChargebackChange = invoicePaymentChange.getPayload()
-                .getInvoicePaymentChargebackChange();
         when(invoiceDao
                 .get(event.getSourceId()))
                 .thenReturn(new Invoice());
@@ -65,6 +62,10 @@ class InvoicePaymentChargebackRejectedHandlerTest {
         handler.handle(change, event);
         verify(invoiceDao, times(1))
                 .get(event.getSourceId());
+
+        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
+        InvoicePaymentChargebackChange invoicePaymentChargebackChange = invoicePaymentChange.getPayload()
+                .getInvoicePaymentChargebackChange();
         verify(chargebackDao, times(1))
                 .markAsRejected(event.getEventId(), event.getSourceId(), invoicePaymentChange.getId(),
                         invoicePaymentChargebackChange.getId());

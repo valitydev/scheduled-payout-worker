@@ -41,16 +41,6 @@ public class RefundDaoImpl extends AbstractGenericDao implements RefundDao {
     }
 
     @Override
-    public Refund get(String invoiceId, String paymentId, String refundId) throws DaoException {
-        Query query = getDslContext().selectFrom(REFUND)
-                .where(REFUND.INVOICE_ID.eq(invoiceId)
-                        .and(REFUND.PAYMENT_ID.eq(paymentId))
-                        .and(REFUND.REFUND_ID.eq(refundId)));
-
-        return fetchOne(query, refundRowMapper);
-    }
-
-    @Override
     public void markAsSucceeded(long eventId, String invoiceId, String paymentId, String refundId,
                                 LocalDateTime succeededAt) throws DaoException {
         Query query = getDslContext().update(REFUND)

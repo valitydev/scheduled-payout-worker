@@ -55,10 +55,6 @@ class InvoicePaymentRefundFailedHandlerTest {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
 
-        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
-        InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange
-                .getPayload()
-                .getInvoicePaymentRefundChange();
         when(invoiceDao
                 .get(event.getSourceId()))
                 .thenReturn(new Invoice());
@@ -66,6 +62,11 @@ class InvoicePaymentRefundFailedHandlerTest {
         handler.handle(change, event);
         verify(invoiceDao, times(1))
                 .get(event.getSourceId());
+
+        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
+        InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange
+                .getPayload()
+                .getInvoicePaymentRefundChange();
         verify(refundDao, times(1)).markAsFailed(event.getEventId(), event.getSourceId(),
                 invoicePaymentChange.getId(),
                 invoicePaymentRefundChange.getId());

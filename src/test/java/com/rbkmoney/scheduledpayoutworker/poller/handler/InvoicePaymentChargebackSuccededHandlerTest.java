@@ -55,7 +55,6 @@ class InvoicePaymentChargebackSuccededHandlerTest {
         InvoiceChange change = invoiceChange();
         MachineEvent event = prepareEvent();
 
-        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         when(invoiceDao
                 .get(event.getSourceId()))
                 .thenReturn(new Invoice());
@@ -64,6 +63,7 @@ class InvoicePaymentChargebackSuccededHandlerTest {
         verify(invoiceDao, times(1))
                 .get(event.getSourceId());
 
+        InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         InvoicePaymentChargebackChange invoicePaymentChargebackChange = invoicePaymentChange.getPayload()
                 .getInvoicePaymentChargebackChange();
         verify(chargebackDao, times(1))
