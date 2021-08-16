@@ -5,6 +5,7 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,13 @@ public class InvoicePaymentRouteChangedHandler implements PaymentProcessingHandl
 
     private final PaymentDao paymentDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
     public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
-                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentRouteChanged();
+                && invoiceChange.getInvoicePaymentChange().getPayload().isSetInvoicePaymentRouteChanged()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override

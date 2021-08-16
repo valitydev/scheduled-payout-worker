@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.CashFlowType;
@@ -23,11 +24,14 @@ public class InvoicePaymentCashFlowChangedHandler implements PaymentProcessingHa
 
     private final PaymentDao paymentDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
     public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
                 && invoiceChange.getInvoicePaymentChange()
-                .getPayload().isSetInvoicePaymentCashFlowChanged();
+                .getPayload().isSetInvoicePaymentCashFlowChanged()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override

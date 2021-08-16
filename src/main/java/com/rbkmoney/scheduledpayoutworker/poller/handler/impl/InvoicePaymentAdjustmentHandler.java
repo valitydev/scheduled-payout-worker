@@ -10,6 +10,7 @@ import com.rbkmoney.payouter.domain.enums.AdjustmentStatus;
 import com.rbkmoney.payouter.domain.tables.pojos.Adjustment;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
 import com.rbkmoney.scheduledpayoutworker.dao.AdjustmentDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import com.rbkmoney.scheduledpayoutworker.util.DamselUtil;
@@ -26,6 +27,8 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
 
     private final PaymentDao paymentDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
     public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
@@ -33,7 +36,8 @@ public class InvoicePaymentAdjustmentHandler implements PaymentProcessingHandler
                 && invoiceChange
                 .getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentAdjustmentChange().getPayload()
-                .isSetInvoicePaymentAdjustmentCreated();
+                .isSetInvoicePaymentAdjustmentCreated()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override

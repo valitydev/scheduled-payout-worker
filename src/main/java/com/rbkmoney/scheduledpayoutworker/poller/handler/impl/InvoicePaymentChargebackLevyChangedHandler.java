@@ -8,6 +8,7 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentChargebackLevyChange
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.payouter.domain.tables.pojos.Chargeback;
 import com.rbkmoney.scheduledpayoutworker.dao.ChargebackDao;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.PaymentProcessingHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,8 @@ public class InvoicePaymentChargebackLevyChangedHandler implements PaymentProces
 
     private final ChargebackDao chargebackDao;
 
+    private final InvoiceDao invoiceDao;
+
     @Override
     public boolean accept(InvoiceChange invoiceChange, MachineEvent event) {
         return invoiceChange.isSetInvoicePaymentChange()
@@ -27,7 +30,8 @@ public class InvoicePaymentChargebackLevyChangedHandler implements PaymentProces
                 .isSetInvoicePaymentChargebackChange()
                 && invoiceChange.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentChargebackChange().getPayload()
-                .isSetInvoicePaymentChargebackLevyChanged();
+                .isSetInvoicePaymentChargebackLevyChanged()
+                && invoiceDao.get(event.getSourceId()) != null;
     }
 
     @Override

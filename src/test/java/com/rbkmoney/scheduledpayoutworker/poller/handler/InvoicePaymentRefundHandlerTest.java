@@ -2,7 +2,9 @@ package com.rbkmoney.scheduledpayoutworker.poller.handler;
 
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.payouter.domain.tables.pojos.Invoice;
 import com.rbkmoney.payouter.domain.tables.pojos.Payment;
+import com.rbkmoney.scheduledpayoutworker.dao.InvoiceDao;
 import com.rbkmoney.scheduledpayoutworker.dao.PaymentDao;
 import com.rbkmoney.scheduledpayoutworker.dao.RefundDao;
 import com.rbkmoney.scheduledpayoutworker.poller.handler.impl.InvoicePaymentRefundHandler;
@@ -24,6 +26,9 @@ class InvoicePaymentRefundHandlerTest {
     @Mock
     private PaymentDao paymentDao;
 
+    @Mock
+    private InvoiceDao invoiceDao;
+
     private InvoicePaymentRefundHandler handler;
 
     private AutoCloseable mocks;
@@ -33,7 +38,7 @@ class InvoicePaymentRefundHandlerTest {
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        handler = new InvoicePaymentRefundHandler(refundDao, paymentDao);
+        handler = new InvoicePaymentRefundHandler(refundDao, paymentDao, invoiceDao);
         preparedMocks = new Object[] {refundDao, paymentDao};
     }
 
@@ -45,7 +50,13 @@ class InvoicePaymentRefundHandlerTest {
 
     @Test
     void accept() {
-        assertTrue(handler.accept(invoiceChange(), prepareEvent()));
+        MachineEvent event = prepareEvent();
+        when(invoiceDao
+                .get(event.getSourceId()))
+                .thenReturn(new Invoice());
+        assertTrue(handler.accept(invoiceChange(), event));
+        verify(invoiceDao, times(1))
+                .get(event.getSourceId());
     }
 
     @Test
