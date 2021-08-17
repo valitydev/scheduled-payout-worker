@@ -123,7 +123,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         producer.send(partyTopic, shopCreatedEvent(partyId, shopId));
 
-        verify(partyManagementClient, timeout(MOCK_TIMEOUT_MILLIS).times(4))
+        verify(partyManagementClient, timeout(MOCK_TIMEOUT_MILLIS).times(3))
                 .get(any(), eq(partyId));
         verify(dominantClient, timeout(MOCK_TIMEOUT_MILLIS).times(1))
                 .checkoutObject(any(),
@@ -221,7 +221,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         executeJobRequest.setScheduledJobContext(context);
         assertEquals(registerJobRequest.bufferForContext(), client.executeJob(executeJobRequest));
 
-        verify(partyManagementClient, times(5)).get(any(), eq(partyId));
+        verify(partyManagementClient, times(4)).get(any(), eq(partyId));
         verify(payoutManagerClient, times(1)).createPayout(payoutParamsCaptor.capture());
 
         PayoutParams payoutParams = payoutParamsCaptor.getValue();
