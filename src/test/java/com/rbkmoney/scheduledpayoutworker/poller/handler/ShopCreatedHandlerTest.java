@@ -78,14 +78,12 @@ class ShopCreatedHandlerTest {
         MachineEvent event = prepareEvent();
         String partyId = event.getSourceId();
         String shopId = effectUnit.getShopId();
+        party.setShops(Map.of(shopId, shop));
 
         when(partyManagementService.getParty(partyId)).thenReturn(party);
-        when(partyManagementService.getShop(partyId, shopId)).thenReturn(shop);
         handler.handle(change, event);
         verify(partyManagementService, times(1))
                 .getParty(partyId);
-        verify(partyManagementService, times(1))
-                .getShop(partyId, shopId);
         verify(shopMetaDao, times(1)).save(partyId, shopId, true);
     }
 

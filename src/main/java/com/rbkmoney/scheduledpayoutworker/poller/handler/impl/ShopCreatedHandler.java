@@ -48,7 +48,12 @@ public class ShopCreatedHandler implements PartyManagementHandler {
         String partyId = event.getSourceId();
 
         Party party = partyManagementService.getParty(partyId);
-        Shop shop = partyManagementService.getShop(partyId, shopId);
+        Shop shop = party.getShops().get(shopId);
+
+        if (shop == null) {
+            log.warn("Shop not found, partyId='{}', shopId='{}'", partyId, shopId);
+            return;
+        }
 
         if (DamselUtil.hasPaymentInstitutionAccountPayTool(party, shop.getContractId(), shop.getPayoutToolId())) {
             shopMetaDao.save(partyId, shopId, true);
