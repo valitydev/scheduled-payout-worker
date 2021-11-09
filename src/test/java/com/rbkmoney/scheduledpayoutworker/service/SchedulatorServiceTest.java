@@ -7,6 +7,7 @@ import com.rbkmoney.scheduledpayoutworker.dao.ShopMetaDao;
 import com.rbkmoney.scheduledpayoutworker.model.ScheduledJobContext;
 import com.rbkmoney.scheduledpayoutworker.serde.impl.ScheduledJobSerializer;
 import com.rbkmoney.scheduledpayoutworker.service.impl.SchedulatorServiceImpl;
+import com.rbkmoney.scheduledpayoutworker.util.GenerateUtil;
 import org.apache.thrift.TException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,21 +72,24 @@ class SchedulatorServiceTest {
         PaymentInstitution paymentInstitution = preparePaymentInstitution();
         when(dominantService.getPaymentInstitution(institutionRef)).thenReturn(paymentInstitution);
 
+        BusinessScheduleRef businessScheduleRef = prepareBusinessScheduleRef();
         ShopMeta shopMeta = new ShopMeta();
         shopMeta.setSchedulerId(generateRandomIntId());
+        String payoutScheduleId = GenerateUtil.generatePayoutScheduleId(partyId, shopId, businessScheduleRef.getId());
+        shopMeta.setPayoutScheduleId(payoutScheduleId);
         shopMeta.setHasPaymentInstitutionAccPayTool(true);
 
         when(shopMetaDao.get(partyId, shopId)).thenReturn(shopMeta);
-        BusinessScheduleRef businessScheduleRef = prepareBusinessScheduleRef();
         service.registerJob(partyId, shopId, businessScheduleRef);
         verify(partyManagementService, times(1)).getShop(partyId, shopId);
         verify(partyManagementService, times(1)).getPaymentInstitutionRef(partyId, shop.getContractId());
         verify(dominantService, times(1)).getPaymentInstitution(institutionRef);
         verify(shopMetaDao, times(1))
-                .save(partyId, shopId, paymentInstitution.getCalendar().getId(), businessScheduleRef.getId(), true);
+                .update(partyId, shopId, paymentInstitution.getCalendar().getId(), businessScheduleRef.getId(),
+                        payoutScheduleId);
         verify(shopMetaDao, times(1)).get(partyId, shopId);
         verify(shopMetaDao, times(1)).disableShop(partyId, shopId);
-        verify(schedulatorClient, times(1)).deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
+        verify(schedulatorClient, times(1)).deregisterJob(shopMeta.getPayoutScheduleId());
         verify(scheduledJobSerializer, times(1)).writeByte(scheduledJobContextCaptor.capture());
         ScheduledJobContext context = scheduledJobContextCaptor.getValue();
         verify(schedulatorClient, times(1)).registerJob(eq(context.getJobId()), notNull());
@@ -96,14 +100,14 @@ class SchedulatorServiceTest {
         String partyId = generateRandomStringId();
         String shopId = generateRandomStringId();
         ShopMeta shopMeta = new ShopMeta();
-        shopMeta.setSchedulerId(generateRandomIntId());
+        shopMeta.setPayoutScheduleId(generateRandomStringId());
         when(shopMetaDao.get(partyId, shopId)).thenReturn(shopMeta);
 
         service.deregisterJob(partyId, shopId);
 
         verify(shopMetaDao, times(1)).get(partyId, shopId);
         verify(shopMetaDao, times(1)).disableShop(partyId, shopId);
-        verify(schedulatorClient, times(1)).deregisterJob(String.valueOf(shopMeta.getSchedulerId()));
+        verify(schedulatorClient, times(1)).deregisterJob(shopMeta.getPayoutScheduleId());
 
     }
 
