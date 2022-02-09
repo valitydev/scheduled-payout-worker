@@ -60,7 +60,7 @@ service:
     url: http://payoutmanager:8022/payout/management
     networkTimeout: 5000
 kafka:
-  bootstrap-servers: kafka1.bst1.rbkmoney.net:9092
+  bootstrap-servers: kafka:9092
   client-id: scheduled-payout-worker
   consumer:
     group-id: scheduled-payout-worker-group-1
