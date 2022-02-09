@@ -1,11 +1,6 @@
 management:
-  security:
-    flag: false
   metrics:
     export:
-      statsd:
-        flavor: etsy
-        enabled: false
       prometheus:
         enabled: false
   endpoint:
