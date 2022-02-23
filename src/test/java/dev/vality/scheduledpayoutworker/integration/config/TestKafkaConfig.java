@@ -27,9 +27,6 @@ public class TestKafkaConfig {
     @Value("${kafka.topics.party-management.id}")
     private String partyTopic;
 
-    @Value("${kafka.topics.invoice.id}")
-    private String invoiceTopic;
-
     @Bean
     public ProducerFactory<String, SinkEvent> transactionProducerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -58,14 +55,6 @@ public class TestKafkaConfig {
     @Bean
     public NewTopic partyTopic() {
         return TopicBuilder.name(partyTopic)
-                .partitions(1)
-                .replicas(1)
-                .build();
-    }
-
-    @Bean
-    public NewTopic invoiceTopic() {
-        return TopicBuilder.name(invoiceTopic)
                 .partitions(1)
                 .replicas(1)
                 .build();

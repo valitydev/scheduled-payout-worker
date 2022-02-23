@@ -1,5 +1,6 @@
 package dev.vality.scheduledpayoutworker.integration;
 
+import dev.vality.damsel.accounter.AccounterSrv;
 import dev.vality.damsel.domain.Party;
 import dev.vality.damsel.domain_config.RepositoryClientSrv;
 import dev.vality.damsel.domain_config.VersionedObject;
@@ -9,14 +10,12 @@ import dev.vality.machinegun.eventsink.SinkEvent;
 import dev.vality.payout.manager.Payout;
 import dev.vality.payout.manager.PayoutManagementSrv;
 import dev.vality.payout.manager.PayoutParams;
-import dev.vality.payouter.domain.tables.Invoice;
 import dev.vality.payouter.domain.tables.ShopMeta;
 import dev.vality.scheduledpayoutworker.config.AbstractKafkaTestContainerConfig;
 import dev.vality.scheduledpayoutworker.dao.mapper.RecordRowMapper;
 import dev.vality.scheduledpayoutworker.integration.config.TestKafkaConfig;
 import dev.vality.woody.thrift.impl.http.THSpawnClientBuilder;
 import lombok.SneakyThrows;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +64,9 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
     @MockBean
     public PayoutManagementSrv.Iface payoutManagerClient;
 
+    @MockBean
+    public AccounterSrv.Iface shumwayClient;
+
     @Autowired
     private KafkaTemplate<String, SinkEvent> producer;
 
@@ -73,9 +75,6 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
     @Value("${kafka.topics.party-management.id}")
     private String partyTopic;
-
-    @Value("${kafka.topics.invoice.id}")
-    private String invoiceTopic;
 
     @LocalServerPort
     private int port;
@@ -134,7 +133,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         List<dev.vality.payouter.domain.tables.pojos.ShopMeta> shopMetas =
                 jdbcTemplate
                         .query(
-                                "SELECT party_id, shop_id, wtime, has_payment_institution_acc_pay_tool " +
+                                "SELECT party_id, shop_id, wtime, last_payout_created_at " +
                                         "FROM pt.shop_meta",
                                 new RecordRowMapper<>(new ShopMeta(),
                                         dev.vality.payouter.domain.tables.pojos.ShopMeta.class));
@@ -144,59 +143,9 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         assertAll(
                 () -> assertEquals(partyId, shopMeta.getPartyId()),
                 () -> assertEquals(shopId, shopMeta.getShopId()),
-                () -> assertTrue(shopMeta.getHasPaymentInstitutionAccPayTool()),
-                () -> assertNotNull(shopMeta.getWtime())
+                () -> assertNotNull(shopMeta.getWtime()),
+                () -> assertNull(shopMeta.getLastPayoutCreatedAt())
         );
-
-
-        //Send few invoices
-        String invoiceId = generateRandomStringId();
-        SinkEvent invoiceCreated = invoiceCreatedEvent(partyId, shopId, invoiceId);
-        producer.send(invoiceTopic, invoiceCreated).completable().join();
-
-        Awaitility.await()
-                .atLeast(Duration.ofMillis(50))
-                .atMost(Duration.ofSeconds(10))
-                .with()
-                .pollInterval(Duration.ofMillis(100))
-                .until(recordsAppeared(Invoice.INVOICE.getSchema().getName() +
-                        '.' +
-                        Invoice.INVOICE.getName()));
-
-        //Invoice should be saved to DB because it has party and shop which were already saved to DB
-        List<dev.vality.payouter.domain.tables.pojos.Invoice> invoices =
-                jdbcTemplate.query("SELECT party_id, shop_id, created_at FROM pt.invoice",
-                        new RecordRowMapper<>(new Invoice(),
-                                dev.vality.payouter.domain.tables.pojos.Invoice.class));
-        assertEquals(1, invoices.size());
-        var invoice = invoices.get(0);
-
-        assertAll(
-                () -> assertEquals(partyId, invoice.getPartyId()),
-                () -> assertEquals(shopId, invoice.getShopId()),
-                () -> assertNotNull(invoice.getCreatedAt())
-        );
-
-        //Invoice with non-existing partyId and shopId must not be saved
-        String unexpectedPartyId = "test";
-        String unexpectedShopId = "test";
-        String unexpectedInvoiceId = "test";
-        producer.send(invoiceTopic, invoiceCreatedEvent(unexpectedPartyId, unexpectedShopId, unexpectedInvoiceId));
-
-        invoices =
-                jdbcTemplate.query("SELECT party_id, shop_id, created_at FROM pt.invoice where party_id = ?",
-                        new RecordRowMapper<>(new Invoice(),
-                                dev.vality.payouter.domain.tables.pojos.Invoice.class),
-                        unexpectedPartyId);
-        assertTrue(invoices.isEmpty());
-
-        //Create payment
-        String paymentTimestamp = "2021-07-01T10:15:30Z";
-        long amount = 100L;
-        String paymentId = generateRandomStringId();
-        producer.send(invoiceTopic, paymentCreatedEvent(paymentId, invoiceId, paymentTimestamp, amount));
-        //Capture payment
-        producer.send(invoiceTopic, paymentCapturedEvent(invoiceId, paymentId, paymentTimestamp));
 
         //Check triggered job processing
         ScheduledJobExecutorSrv.Iface client = new THSpawnClientBuilder()
@@ -229,7 +178,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         assertAll(
                 () -> assertEquals(party.getShops().get(shopId).getAccount().getCurrency().getSymbolicCode(),
                         payoutParams.getCash().getCurrency().getSymbolicCode()),
-                () -> assertEquals(amount, payoutParams.getCash().getAmount()),
+               // () -> assertEquals(amount, payoutParams.getCash().getAmount()),
                 () -> assertEquals(partyId, payoutParams.getShopParams().getPartyId()),
                 () -> assertEquals(shopId, payoutParams.getShopParams().getShopId())
         );

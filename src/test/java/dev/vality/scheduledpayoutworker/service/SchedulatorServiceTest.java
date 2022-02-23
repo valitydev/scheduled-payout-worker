@@ -77,7 +77,6 @@ class SchedulatorServiceTest {
         shopMeta.setSchedulerId(generateRandomIntId());
         String payoutScheduleId = GenerateUtil.generatePayoutScheduleId(partyId, shopId, businessScheduleRef.getId());
         shopMeta.setPayoutScheduleId(payoutScheduleId);
-        shopMeta.setHasPaymentInstitutionAccPayTool(true);
 
         when(shopMetaDao.get(partyId, shopId)).thenReturn(shopMeta);
         service.registerJob(partyId, shopId, businessScheduleRef);

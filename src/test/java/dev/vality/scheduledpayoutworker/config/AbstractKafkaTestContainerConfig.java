@@ -16,7 +16,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractKafkaTestContainerConfig extends AbstractPostgreTestContainerConfig {
 
     private static final String CONFLUENT_IMAGE_NAME = "confluentinc/cp-kafka";
-    private static final String CONFLUENT_PLATFORM_VERSION = "6.1.2";
+    private static final String CONFLUENT_PLATFORM_VERSION = "6.2.2";
 
     @Container
     protected static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName

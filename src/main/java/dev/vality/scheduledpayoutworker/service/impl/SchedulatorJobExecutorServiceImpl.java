@@ -6,7 +6,6 @@ import dev.vality.scheduledpayoutworker.dao.ShopMetaDao;
 import dev.vality.scheduledpayoutworker.exception.InvalidStateException;
 import dev.vality.scheduledpayoutworker.exception.JobExecutionException;
 import dev.vality.scheduledpayoutworker.exception.NotFoundException;
-import dev.vality.scheduledpayoutworker.exception.StorageException;
 import dev.vality.scheduledpayoutworker.model.ScheduledJobContext;
 import dev.vality.scheduledpayoutworker.serde.impl.ScheduledJobSerializer;
 import dev.vality.scheduledpayoutworker.service.PayoutManagerService;
@@ -86,7 +85,7 @@ public class SchedulatorJobExecutorServiceImpl implements ScheduledJobExecutorSr
                                 " reason='{}'",
                         partyId, shopId, scheduledJobContext, ex);
 
-            } catch (StorageException | WRuntimeException | NestedRuntimeException ex) {
+            } catch (WRuntimeException | NestedRuntimeException ex) {
                 throw new JobExecutionException(String.format("Job execution failed (partyId='%s', shopId='%s', " +
                                 "scheduledJobContext='%s'), retry",
                         partyId, shopId, scheduledJobContext), ex);

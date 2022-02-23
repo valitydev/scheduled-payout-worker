@@ -35,8 +35,8 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: org.postgresql.Driver
     url: @db.url@
-    username: @db.user@
-    password: @db.password@
+    username: test
+    password: test
     hikari:
       idle-timeout: 30000
       maximum-pool-size: 30
@@ -58,6 +58,9 @@ service:
     callback-path: http://localhost:8022/v1/schedulator
   payoutManager:
     url: http://payoutmanager:8022/payout/management
+    networkTimeout: 5000
+  shumway:
+    url: http://shumway:8022/accounter
     networkTimeout: 5000
 kafka:
   bootstrap-servers: kafka:9092

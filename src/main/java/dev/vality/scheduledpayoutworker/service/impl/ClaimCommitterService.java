@@ -28,7 +28,7 @@ public class ClaimCommitterService implements ClaimCommitterSrv.Iface {
                     String shopId = shopModificationUnit.getId();
                     ShopModification shopModification = shopModificationUnit.getModification();
                     ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
-                    if (shopMeta != null && shopMeta.getHasPaymentInstitutionAccPayTool()) {
+                    if (shopMeta != null) {
                         if (shopModification.isSetPayoutScheduleModification()) {
                             pmCommitHandler.accept(partyId, shopId, shopModification.getPayoutScheduleModification());
                         }
@@ -49,7 +49,7 @@ public class ClaimCommitterService implements ClaimCommitterSrv.Iface {
                     String shopId = shopModificationUnit.getId();
                     ShopModification shopModification = shopModificationUnit.getModification();
                     ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
-                    if (shopMeta != null && shopMeta.getHasPaymentInstitutionAccPayTool()) {
+                    if (shopMeta != null) {
                         if (shopModification.isSetPayoutScheduleModification()) {
                             pmCommitHandler.commit(partyId, shopId, shopModification.getPayoutScheduleModification());
                         }

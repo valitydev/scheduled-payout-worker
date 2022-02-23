@@ -39,7 +39,6 @@ class ClaimCommitterServiceTest {
         preparedMocks = new Object[] {handler};
         service = new ClaimCommitterService(handler, shopMetaDao);
         ShopMeta shopMeta = new ShopMeta();
-        shopMeta.setHasPaymentInstitutionAccPayTool(true);
         Mockito.when(shopMetaDao.get(anyString(), anyString()))
                 .thenReturn(shopMeta);
     }

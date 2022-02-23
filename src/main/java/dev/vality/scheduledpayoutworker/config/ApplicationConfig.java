@@ -1,5 +1,6 @@
 package dev.vality.scheduledpayoutworker.config;
 
+import dev.vality.damsel.accounter.AccounterSrv;
 import dev.vality.damsel.domain_config.RepositoryClientSrv;
 import dev.vality.damsel.payment_processing.PartyManagementSrv;
 import dev.vality.damsel.schedule.SchedulatorSrv;
@@ -53,6 +54,16 @@ public class ApplicationConfig {
         return new THSpawnClientBuilder()
                 .withNetworkTimeout(networkTimeout)
                 .withAddress(resource.getURI()).build(PayoutManagementSrv.Iface.class);
+    }
+
+    @Bean
+    public AccounterSrv.Iface shumwayClient(
+            @Value("${service.shumway.url}") Resource resource,
+            @Value("${service.shumway.networkTimeout}") int networkTimeout
+    ) throws IOException {
+        return new THSpawnClientBuilder()
+                .withNetworkTimeout(networkTimeout)
+                .withAddress(resource.getURI()).build(AccounterSrv.Iface.class);
     }
 
 

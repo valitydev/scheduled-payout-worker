@@ -40,8 +40,6 @@ public class KafkaConfig {
     private int maxPollRecords;
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
-    @Value("${kafka.topics.invoice.concurrency}")
-    private int invoiceConcurrency;
     @Value("${kafka.topics.party-management.concurrency}")
     private int partyConcurrency;
 
@@ -76,27 +74,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, SinkEvent> invoiceConsumerFactory(KafkaSslProperties kafkaSslProperties) {
-        Map<String, Object> config = consumerConfigs(kafkaSslProperties);
-        config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId + "-invoice");
-        return new DefaultKafkaConsumerFactory<>(config);
-    }
-
-    @Bean
     public ConsumerFactory<String, SinkEvent> pmConsumerFactory(KafkaSslProperties kafkaSslProperties) {
         Map<String, Object> config = consumerConfigs(kafkaSslProperties);
         config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId + "-pm");
         return new DefaultKafkaConsumerFactory<>(config);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, SinkEvent> invContainerFactory(
-            ConsumerFactory<String, SinkEvent> invoiceConsumerFactory) {
-        var factory = createGeneralKafkaListenerFactory(invoiceConsumerFactory);
-        factory.setBatchListener(true);
-        factory.setBatchErrorHandler(new SeekToCurrentWithSleepBatchErrorHandler());
-        factory.setConcurrency(invoiceConcurrency);
-        return factory;
     }
 
     @Bean

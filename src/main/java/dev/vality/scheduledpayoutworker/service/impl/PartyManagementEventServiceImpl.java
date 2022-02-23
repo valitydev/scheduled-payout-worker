@@ -4,7 +4,6 @@ import dev.vality.damsel.payment_processing.PartyChange;
 import dev.vality.damsel.payment_processing.PartyEventData;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.scheduledpayoutworker.exception.NotFoundException;
-import dev.vality.scheduledpayoutworker.exception.StorageException;
 import dev.vality.scheduledpayoutworker.poller.handler.PartyManagementHandler;
 import dev.vality.scheduledpayoutworker.service.PartyManagementEventService;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +20,7 @@ public class PartyManagementEventServiceImpl implements PartyManagementEventServ
     private final List<PartyManagementHandler> handlers;
 
     @Override
-    public void processEvent(MachineEvent event, PartyEventData eventPayload)
-            throws StorageException, NotFoundException {
+    public void processEvent(MachineEvent event, PartyEventData eventPayload) throws NotFoundException {
         long eventId = event.getEventId();
         String createdAt = event.getCreatedAt();
         log.debug("Trying to save eventId, eventId={}, eventCreatedAt={}", eventId, createdAt);
