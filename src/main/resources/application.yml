@@ -35,8 +35,8 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: org.postgresql.Driver
     url: @db.url@
-    username: test
-    password: test
+    username: @db.user@
+    password: @db.password@
     hikari:
       idle-timeout: 30000
       maximum-pool-size: 30
