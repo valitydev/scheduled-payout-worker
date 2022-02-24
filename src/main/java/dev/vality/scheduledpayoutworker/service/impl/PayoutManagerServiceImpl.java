@@ -26,8 +26,6 @@ import java.time.LocalDateTime;
 @Slf4j
 public class PayoutManagerServiceImpl implements PayoutManagerService {
 
-    public static final int MAX_DAYS = 7;
-
     private final PayoutManagementSrv.Iface payoutManagerClient;
     private final PartyManagementService partyManagementService;
     private final ShumwayService shumwayService;
@@ -50,8 +48,7 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
                     String.format("Party or shop blocked for payouts, partyId='%s', shopId='%s'", partyId, shopId));
         }
 
-        LocalDateTime lastPayoutCreatedAt = shopMetaDao.get(partyId, shopId).getLastPayoutCreatedAt();
-        LocalDateTime fromTime = lastPayoutCreatedAt != null ? lastPayoutCreatedAt : toTime.minusDays(MAX_DAYS);
+        LocalDateTime fromTime = shopMetaDao.get(partyId, shopId).getLastPayoutCreatedAt();
         long amount = shumwayService.getAccountBalance(Long.parseLong(shopId), fromTime, toTime);
         if (amount == 0) {
             return null;

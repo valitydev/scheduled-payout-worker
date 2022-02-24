@@ -8,6 +8,7 @@ import dev.vality.scheduledpayoutworker.service.ShumwayService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,13 +21,14 @@ public class ShumwayServiceImpl implements ShumwayService {
     private final AccounterSrv.Iface shumwayClient;
 
     @Override
-    public long getAccountBalance(long accountId, LocalDateTime fromTime, LocalDateTime toTime) {
+    public long getAccountBalance(long accountId, @Nullable LocalDateTime fromTime, LocalDateTime toTime) {
         log.info("Trying to get account balance, accountId='{}', fromTime='{}', toTime='{}'",
                 accountId, fromTime, toTime);
         long balance;
         try {
-            balance = shumwayClient.getAccountBalance(accountId, TypeUtil.temporalToString(fromTime),
-                    TypeUtil.temporalToString(toTime));
+            var from = fromTime == null ? null : TypeUtil.temporalToString(fromTime);
+            var to = TypeUtil.temporalToString(toTime);
+            balance = shumwayClient.getAccountBalance(accountId, from, to);
         } catch (AccountNotFound e) {
             throw new NotFoundException(String.format("Failed to find account, accountId = '%d'", accountId));
         } catch (TException e) {

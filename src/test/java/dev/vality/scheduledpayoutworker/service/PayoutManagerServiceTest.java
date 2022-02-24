@@ -71,7 +71,7 @@ class PayoutManagerServiceTest {
         payout.setPayoutId(payoutId);
         LocalDateTime toTime = LocalDateTime.now();
         when(shumwayService.getAccountBalance(Long.parseLong(shopId),
-                toTime.minusDays(7),
+                null,
                 toTime))
                 .thenReturn(amount);
         var shopMeta = new ShopMeta();
@@ -96,7 +96,7 @@ class PayoutManagerServiceTest {
         verify(partyManagementService, times(1)).getShop(partyId, shopId);
         verify(payoutManagerClient, times(1)).createPayout(payoutParams);
         verify(shumwayService, times(1)).getAccountBalance(Long.parseLong(shopId),
-                toTime.minusDays(7),
+                null,
                 toTime);
         verify(shopMetaDao, times(1)).get(partyId, shopId);
         verify(shopMetaDao, times(1)).update(eq(partyId), eq(shopId), notNull());

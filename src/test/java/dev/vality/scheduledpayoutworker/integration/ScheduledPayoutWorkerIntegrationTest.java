@@ -161,11 +161,10 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         var currentTime = LocalDateTime.now();
         final String toTime = TypeUtil.temporalToString(currentTime);
-        final String fromTime = TypeUtil.temporalToString(currentTime.minusDays(7));
         final long amount = 1234;
 
 
-        when(shumwayClient.getAccountBalance(Long.parseLong(shopId), fromTime, toTime)).thenReturn(amount);
+        when(shumwayClient.getAccountBalance(Long.parseLong(shopId), null, toTime)).thenReturn(amount);
         var payout = fillTBaseObject(new Payout(), Payout.class);
         when(payoutManagerClient.createPayout(any())).thenReturn(payout);
 
@@ -178,7 +177,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         verify(partyManagementClient, times(4)).get(any(), eq(partyId));
         verify(shumwayClient, times(1))
-                .getAccountBalance(Long.parseLong(shopId), fromTime, toTime);
+                .getAccountBalance(Long.parseLong(shopId), null, toTime);
         verify(payoutManagerClient, times(1)).createPayout(payoutParamsCaptor.capture());
 
         PayoutParams payoutParams = payoutParamsCaptor.getValue();
