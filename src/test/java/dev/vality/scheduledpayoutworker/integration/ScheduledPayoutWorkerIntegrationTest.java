@@ -6,6 +6,7 @@ import dev.vality.damsel.domain_config.RepositoryClientSrv;
 import dev.vality.damsel.domain_config.VersionedObject;
 import dev.vality.damsel.payment_processing.PartyManagementSrv;
 import dev.vality.damsel.schedule.*;
+import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import dev.vality.payout.manager.Payout;
 import dev.vality.payout.manager.PayoutManagementSrv;
@@ -32,12 +33,10 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.jdbc.JdbcTestUtils;
 
 import java.net.URI;
-import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import static dev.vality.scheduledpayoutworker.util.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,7 +94,8 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
     @BeforeEach
     public void init() {
         mocks = MockitoAnnotations.openMocks(this);
-        preparedMocks = new Object[] {partyManagementClient, dominantClient, schedulatorClient, payoutManagerClient};
+        preparedMocks = new Object[] {partyManagementClient, dominantClient, schedulatorClient, payoutManagerClient,
+                shumwayClient};
     }
 
     @AfterEach
@@ -159,18 +159,26 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         assertTrue(validationResponse.getResponseStatus().isSetSuccess());
 
-        when(payoutManagerClient.createPayout(any())).thenReturn(fillTBaseObject(new Payout(), Payout.class));
+        var currentTime = LocalDateTime.now();
+        final String toTime = TypeUtil.temporalToString(currentTime);
+        final String fromTime = TypeUtil.temporalToString(currentTime.minusDays(7));
+        final long amount = 1234;
 
-        String schedulatorExecutionTimestamp = "2021-07-02T10:15:30Z";
+
+        when(shumwayClient.getAccountBalance(Long.parseLong(shopId), fromTime, toTime)).thenReturn(amount);
+        var payout = fillTBaseObject(new Payout(), Payout.class);
+        when(payoutManagerClient.createPayout(any())).thenReturn(payout);
 
         ExecuteJobRequest executeJobRequest = fillTBaseObject(new ExecuteJobRequest(), ExecuteJobRequest.class);
         executeJobRequest.setServiceExecutionContext(registerJobRequest.bufferForContext());
         ScheduledJobContext context = fillTBaseObject(new ScheduledJobContext(), ScheduledJobContext.class);
-        context.setNextCronTime(schedulatorExecutionTimestamp);
+        context.setNextCronTime(toTime);
         executeJobRequest.setScheduledJobContext(context);
         assertEquals(registerJobRequest.bufferForContext(), client.executeJob(executeJobRequest));
 
         verify(partyManagementClient, times(4)).get(any(), eq(partyId));
+        verify(shumwayClient, times(1))
+                .getAccountBalance(Long.parseLong(shopId), fromTime, toTime);
         verify(payoutManagerClient, times(1)).createPayout(payoutParamsCaptor.capture());
 
         PayoutParams payoutParams = payoutParamsCaptor.getValue();
@@ -178,16 +186,21 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         assertAll(
                 () -> assertEquals(party.getShops().get(shopId).getAccount().getCurrency().getSymbolicCode(),
                         payoutParams.getCash().getCurrency().getSymbolicCode()),
-               // () -> assertEquals(amount, payoutParams.getCash().getAmount()),
+                () -> assertEquals(amount, payoutParams.getCash().getAmount()),
                 () -> assertEquals(partyId, payoutParams.getShopParams().getPartyId()),
                 () -> assertEquals(shopId, payoutParams.getShopParams().getShopId())
         );
 
-    }
+        shopMetas = jdbcTemplate.query("SELECT party_id, shop_id, wtime, last_payout_created_at FROM pt.shop_meta",
+                new RecordRowMapper<>(new ShopMeta(), dev.vality.payouter.domain.tables.pojos.ShopMeta.class));
+        assertEquals(1, shopMetas.size());
+        var payoutShopMeta = shopMetas.get(0);
 
-    private Callable<Boolean> recordsAppeared(String tableName) {
-        return () -> JdbcTestUtils.countRowsInTable(jdbcTemplate, tableName) > 0;
+        assertAll(() -> assertEquals(partyId, payoutShopMeta.getPartyId()),
+                () -> assertEquals(shopId, payoutShopMeta.getShopId()),
+                () -> assertNotNull(payoutShopMeta.getWtime()),
+                () -> assertEquals(payout.getCreatedAt(),
+                        TypeUtil.temporalToString(payoutShopMeta.getLastPayoutCreatedAt())));
     }
-
 
 }

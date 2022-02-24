@@ -1,12 +1,11 @@
 package dev.vality.scheduledpayoutworker.service;
 
-import dev.vality.damsel.accounter.AccounterSrv;
 import dev.vality.damsel.domain.*;
-import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.payout.manager.Payout;
 import dev.vality.payout.manager.PayoutManagementSrv;
 import dev.vality.payout.manager.PayoutParams;
 import dev.vality.payout.manager.ShopParams;
+import dev.vality.payouter.domain.tables.pojos.ShopMeta;
 import dev.vality.scheduledpayoutworker.dao.*;
 import dev.vality.scheduledpayoutworker.service.impl.PayoutManagerServiceImpl;
 import org.apache.thrift.TException;
@@ -29,8 +28,6 @@ class PayoutManagerServiceTest {
 
     @Mock
     private PayoutManagementSrv.Iface payoutManagerClient;
-    @Mock
-    private AccounterSrv.Iface shumwayClient;
     @Mock
     private PartyManagementService partyManagementService;
     @Mock
@@ -70,19 +67,23 @@ class PayoutManagerServiceTest {
 
         when(partyManagementService.getShop(partyId, shopId)).thenReturn(shop);
 
-        Payout payout = new Payout();
+        Payout payout =  fillTBaseObject(new Payout(), Payout.class);
         payout.setPayoutId(payoutId);
         LocalDateTime toTime = LocalDateTime.now();
-        when(shumwayClient.getAccountBalance(Long.parseLong(shopId),
-                TypeUtil.temporalToString(toTime.minusDays(7)),
-                TypeUtil.temporalToString(toTime)))
+        when(shumwayService.getAccountBalance(Long.parseLong(shopId),
+                toTime.minusDays(7),
+                toTime))
                 .thenReturn(amount);
+        var shopMeta = new ShopMeta();
+        shopMeta.setShopId(shopId);
+        shopMeta.setPartyId(partyId);
+        when(shopMetaDao.get(partyId, shopId)).thenReturn(shopMeta);
         when(payoutManagerClient.createPayout(payoutParamsCaptor.capture())).thenReturn(payout);
 
         String actualPayoutId = service.createPayoutByRange(partyId, shopId, toTime);
-        PayoutParams payoutParams = payoutParamsCaptor.getValue();
-        assertEquals(payoutParams.getPayoutId(), actualPayoutId);
+        assertEquals(payoutId, actualPayoutId);
 
+        PayoutParams payoutParams = payoutParamsCaptor.getValue();
         String symbolicCode = shop.getAccount().getCurrency().getSymbolicCode();
         CurrencyRef currency = new CurrencyRef().setSymbolicCode(symbolicCode);
         Cash cash = new Cash().setAmount(amount).setCurrency(currency);
@@ -94,7 +95,11 @@ class PayoutManagerServiceTest {
 
         verify(partyManagementService, times(1)).getShop(partyId, shopId);
         verify(payoutManagerClient, times(1)).createPayout(payoutParams);
-
+        verify(shumwayService, times(1)).getAccountBalance(Long.parseLong(shopId),
+                toTime.minusDays(7),
+                toTime);
+        verify(shopMetaDao, times(1)).get(partyId, shopId);
+        verify(shopMetaDao, times(1)).update(eq(partyId), eq(shopId), notNull());
     }
 
     private Shop prepareShop(String shopId) {
