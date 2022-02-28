@@ -34,7 +34,6 @@ public class ShopMetaDaoImpl extends AbstractGenericDao implements ShopMetaDao {
                 .set(SHOP_META.PARTY_ID, partyId)
                 .set(SHOP_META.SHOP_ID, shopId)
                 .set(SHOP_META.WTIME, now)
-                //TODO: throw exception?
                 .onDuplicateKeyUpdate()
                 .set(SHOP_META.WTIME, now);
 
