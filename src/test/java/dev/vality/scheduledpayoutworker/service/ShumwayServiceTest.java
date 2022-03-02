@@ -5,7 +5,6 @@ import dev.vality.damsel.accounter.AccounterSrv;
 import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.scheduledpayoutworker.exception.NotFoundException;
 import dev.vality.scheduledpayoutworker.service.impl.ShumwayServiceImpl;
-import dev.vality.woody.thrift.impl.http.THSpawnClientBuilder;
 import org.apache.thrift.TException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 
 import static dev.vality.scheduledpayoutworker.util.TestUtil.generateRandomIntId;
@@ -47,47 +45,45 @@ public class ShumwayServiceTest {
     }
 
     @Test
+    void getAccountBalanceDiffTest() throws TException {
+        int accountId = generateRandomIntId();
+        var toTime = LocalDateTime.now();
+        var fromTime = toTime.minusDays(7);
+        long amount = generateRandomIntId();
+        when(shumwayClient.getAccountBalanceDiff(accountId,
+                TypeUtil.temporalToString(fromTime),
+                TypeUtil.temporalToString(toTime))).thenReturn(amount);
+        long actualBalance = service.getAccountBalanceDiff(accountId, fromTime, toTime);
+        assertEquals(amount, actualBalance);
+        verify(shumwayClient, times(1)).getAccountBalanceDiff(accountId,
+                TypeUtil.temporalToString(fromTime),
+                TypeUtil.temporalToString(toTime));
+    }
+
+    @Test
     void getAccountBalanceTest() throws TException {
         int accountId = generateRandomIntId();
         var toTime = LocalDateTime.now();
-        var fromTime = toTime.minusDays(7);
         long amount = generateRandomIntId();
         when(shumwayClient.getAccountBalance(accountId,
-                TypeUtil.temporalToString(fromTime),
                 TypeUtil.temporalToString(toTime))).thenReturn(amount);
-        long actualBalance = service.getAccountBalance(accountId, fromTime, toTime);
+        long actualBalance = service.getAccountBalance(accountId, toTime);
         assertEquals(amount, actualBalance);
         verify(shumwayClient, times(1)).getAccountBalance(accountId,
-                TypeUtil.temporalToString(fromTime),
                 TypeUtil.temporalToString(toTime));
     }
 
     @Test
-    void getAccountBalanceNoStartDateTest() throws TException {
-        int accountId = generateRandomIntId();
-        var toTime = LocalDateTime.now();
-        long amount = generateRandomIntId();
-        when(shumwayClient.getAccountBalance(accountId,
-                null,
-                TypeUtil.temporalToString(toTime))).thenReturn(amount);
-        long actualBalance = service.getAccountBalance(accountId, null, toTime);
-        assertEquals(amount, actualBalance);
-        verify(shumwayClient, times(1)).getAccountBalance(accountId,
-                null,
-                TypeUtil.temporalToString(toTime));
-    }
-
-    @Test
-    void getAccountBalanceNotFoundTest() throws TException {
+    void getAccountBalanceDiffNotFoundTest() throws TException {
         int accountId = generateRandomIntId();
         var toTime = LocalDateTime.now();
         var fromTime = toTime.minusDays(7);
-        when(shumwayClient.getAccountBalance(accountId,
+        when(shumwayClient.getAccountBalanceDiff(accountId,
                 TypeUtil.temporalToString(fromTime),
                 TypeUtil.temporalToString(toTime))).thenThrow(new AccountNotFound(accountId));
 
-        assertThrows(NotFoundException.class, () -> service.getAccountBalance(accountId, fromTime, toTime));
-        verify(shumwayClient, times(1)).getAccountBalance(accountId,
+        assertThrows(NotFoundException.class, () -> service.getAccountBalanceDiff(accountId, fromTime, toTime));
+        verify(shumwayClient, times(1)).getAccountBalanceDiff(accountId,
                 TypeUtil.temporalToString(fromTime),
                 TypeUtil.temporalToString(toTime));
 

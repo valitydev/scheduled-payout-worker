@@ -70,10 +70,7 @@ class PayoutManagerServiceTest {
         Payout payout =  fillTBaseObject(new Payout(), Payout.class);
         payout.setPayoutId(payoutId);
         LocalDateTime toTime = LocalDateTime.now();
-        when(shumwayService.getAccountBalance(Long.parseLong(shopId),
-                null,
-                toTime))
-                .thenReturn(amount);
+        when(shumwayService.getAccountBalance(Long.parseLong(shopId), toTime)).thenReturn(amount);
         var shopMeta = new ShopMeta();
         shopMeta.setShopId(shopId);
         shopMeta.setPartyId(partyId);
@@ -95,9 +92,7 @@ class PayoutManagerServiceTest {
 
         verify(partyManagementService, times(1)).getShop(partyId, shopId);
         verify(payoutManagerClient, times(1)).createPayout(payoutParams);
-        verify(shumwayService, times(1)).getAccountBalance(Long.parseLong(shopId),
-                null,
-                toTime);
+        verify(shumwayService, times(1)).getAccountBalance(Long.parseLong(shopId), toTime);
         verify(shopMetaDao, times(1)).get(partyId, shopId);
         verify(shopMetaDao, times(1)).update(eq(partyId), eq(shopId), notNull());
     }

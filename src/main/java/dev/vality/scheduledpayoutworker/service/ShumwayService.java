@@ -4,5 +4,7 @@ import java.time.LocalDateTime;
 
 public interface ShumwayService {
 
-    long getAccountBalance(long accountId, LocalDateTime fromTime, LocalDateTime toTime);
+    long getAccountBalanceDiff(long accountId, LocalDateTime fromTime, LocalDateTime toTime);
+
+    long getAccountBalance(long accountId, LocalDateTime dateTime);
 }

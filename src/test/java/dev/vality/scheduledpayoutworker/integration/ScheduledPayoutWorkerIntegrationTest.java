@@ -164,7 +164,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         final long amount = 1234;
 
 
-        when(shumwayClient.getAccountBalance(Long.parseLong(shopId), null, toTime)).thenReturn(amount);
+        when(shumwayClient.getAccountBalance(Long.parseLong(shopId), toTime)).thenReturn(amount);
         var payout = fillTBaseObject(new Payout(), Payout.class);
         when(payoutManagerClient.createPayout(any())).thenReturn(payout);
 
@@ -177,7 +177,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         verify(partyManagementClient, times(4)).get(any(), eq(partyId));
         verify(shumwayClient, times(1))
-                .getAccountBalance(Long.parseLong(shopId), null, toTime);
+                .getAccountBalance(Long.parseLong(shopId), toTime);
         verify(payoutManagerClient, times(1)).createPayout(payoutParamsCaptor.capture());
 
         PayoutParams payoutParams = payoutParamsCaptor.getValue();
@@ -198,7 +198,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         assertAll(() -> assertEquals(partyId, payoutShopMeta.getPartyId()),
                 () -> assertEquals(shopId, payoutShopMeta.getShopId()),
                 () -> assertNotNull(payoutShopMeta.getWtime()),
-                () -> assertEquals(payout.getCreatedAt(),
+                () -> assertEquals(toTime,
                         TypeUtil.temporalToString(payoutShopMeta.getLastPayoutCreatedAt())));
     }
 

@@ -48,8 +48,14 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
                     String.format("Party or shop blocked for payouts, partyId='%s', shopId='%s'", partyId, shopId));
         }
 
-        LocalDateTime fromTime = shopMetaDao.get(partyId, shopId).getLastPayoutCreatedAt();
-        long amount = shumwayService.getAccountBalance(Long.parseLong(shopId), fromTime, toTime);
+        var fromTime = shopMetaDao.get(partyId, shopId).getLastPayoutCreatedAt();
+        long amount;
+        if (fromTime == null) {
+            amount = shumwayService.getAccountBalance(Long.parseLong(shopId), toTime);
+        } else {
+            amount = shumwayService.getAccountBalanceDiff(Long.parseLong(shopId), fromTime, toTime);
+        }
+
         if (amount == 0) {
             return null;
         }
@@ -61,7 +67,7 @@ public class PayoutManagerServiceImpl implements PayoutManagerService {
         PayoutParams payoutParams = new PayoutParams(shopParams, cash);
 
         var payout = payoutManagerClient.createPayout(payoutParams);
-        shopMetaDao.update(partyId, shopId, TypeUtil.stringToLocalDateTime(payout.getCreatedAt()));
+        shopMetaDao.update(partyId, shopId, toTime);
         return payout.getPayoutId();
     }
 
