@@ -36,6 +36,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static dev.vality.scheduledpayoutworker.util.TestUtil.*;
@@ -159,7 +160,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         assertTrue(validationResponse.getResponseStatus().isSetSuccess());
 
-        var currentTime = LocalDateTime.now();
+        var currentTime = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
         final String toTime = TypeUtil.temporalToString(currentTime);
         final long amount = 1234;
 
