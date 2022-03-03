@@ -40,7 +40,6 @@ class PartyClaimCreatedHandlerTest {
         handler = new PartyClaimCreatedHandler(schedulatorService, shopMetaDao);
         preparedMocks = new Object[] {schedulatorService};
         ShopMeta shopMeta = new ShopMeta();
-        shopMeta.setHasPaymentInstitutionAccPayTool(true);
         Mockito.when(shopMetaDao.get(anyString(), anyString()))
                 .thenReturn(shopMeta);
     }

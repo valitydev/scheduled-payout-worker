@@ -46,6 +46,9 @@ service:
   payoutManager:
     url: http://payoutmanager:8022/payout/management
     networkTimeout: 5000
+  shumway:
+    url: http://shumway:8022/accounter
+    networkTimeout: 5000
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
   client-id: scheduled-payout-worker
@@ -55,10 +58,6 @@ kafka:
     auto-offset-reset: earliest
     max-poll-records: 20
   topics:
-    invoice:
-      id: mg-invoice
-      enabled: true
-      concurrency: 1
     party-management:
       id: mg-party
       enabled: true

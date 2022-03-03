@@ -61,15 +61,6 @@ class DominantServiceTest {
         verify(retryTemplate, times(1)).execute(any(), any(), any());
     }
 
-    @Test
-    void getCalendar() {
-        CalendarRef calendarRef = prepareCalendarRef();
-        when(retryTemplate.execute(any(), any(), any())).thenReturn(prepareCalendarVersionedObject());
-        Calendar calendar = service.getCalendar(calendarRef);
-        assertNotNull(calendar);
-        verify(retryTemplate, times(1)).execute(any(), any(), any());
-    }
-
     private BusinessScheduleRef prepareBusinessScheduleRef() {
         return fillTBaseObject(new BusinessScheduleRef(), BusinessScheduleRef.class);
     }

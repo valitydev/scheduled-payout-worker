@@ -20,10 +20,10 @@ class ShopMetaDaoTest extends AbstractPostgreTestContainerConfig {
         String partyId = "partyId";
         String shopId = "shopId";
 
-        shopMetaDao.update(partyId, shopId, true);
+        shopMetaDao.update(partyId, shopId);
         ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
 
-        shopMetaDao.update(partyId, shopId, true);
+        shopMetaDao.update(partyId, shopId);
         assertTrue(shopMeta.getWtime().isBefore(shopMetaDao.get(partyId, shopId).getWtime()));
 
         shopMetaDao.update(partyId, shopId, 1, 2, "zzz");

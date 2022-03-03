@@ -27,17 +27,28 @@ public class ShopMetaDaoImpl extends AbstractGenericDao implements ShopMetaDao {
     }
 
     @Override
-    public void update(String partyId, String shopId, boolean hasPaymentInstitutionAccPayTool) throws DaoException {
+    public void update(String partyId, String shopId) throws DaoException {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
         Query query = getDslContext().insertInto(SHOP_META)
                 .set(SHOP_META.PARTY_ID, partyId)
                 .set(SHOP_META.SHOP_ID, shopId)
                 .set(SHOP_META.WTIME, now)
-                .set(SHOP_META.HAS_PAYMENT_INSTITUTION_ACC_PAY_TOOL, hasPaymentInstitutionAccPayTool)
                 .onDuplicateKeyUpdate()
+                .set(SHOP_META.WTIME, now);
+
+        executeOne(query);
+    }
+
+    @Override
+    public void update(String partyId, String shopId, LocalDateTime payoutCreatedAt) throws DaoException {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+
+        Query query = getDslContext().update(SHOP_META)
+                .set(SHOP_META.LAST_PAYOUT_CREATED_AT, payoutCreatedAt)
                 .set(SHOP_META.WTIME, now)
-                .set(SHOP_META.HAS_PAYMENT_INSTITUTION_ACC_PAY_TOOL, hasPaymentInstitutionAccPayTool);
+                .where(SHOP_META.PARTY_ID.eq(partyId)
+                        .and(SHOP_META.SHOP_ID.eq(shopId)));
 
         executeOne(query);
     }

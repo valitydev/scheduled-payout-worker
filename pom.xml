@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>1.0.9</version>
+        <version>1.0.11</version>
     </parent>
 
     <artifactId>scheduled-payout-worker</artifactId>
@@ -56,6 +56,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
+            <version>1.555-bb0ee3a</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>

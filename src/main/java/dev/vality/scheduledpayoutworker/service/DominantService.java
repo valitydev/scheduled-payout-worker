@@ -8,6 +8,4 @@ public interface DominantService {
 
     PaymentInstitution getPaymentInstitution(PaymentInstitutionRef paymentInstitutionRef) throws NotFoundException;
 
-    Calendar getCalendar(CalendarRef calendarRef) throws NotFoundException;
-
 }

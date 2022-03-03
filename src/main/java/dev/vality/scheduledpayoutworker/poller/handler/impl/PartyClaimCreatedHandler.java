@@ -42,7 +42,7 @@ public class PartyClaimCreatedHandler implements PartyManagementHandler {
                 String shopId = shopEffectUnit.getShopId();
                 ShopEffect shopEffect = shopEffectUnit.getEffect();
                 ShopMeta shopMeta = shopMetaDao.get(partyId, shopId);
-                if (shopMeta != null && shopMeta.getHasPaymentInstitutionAccPayTool()) {
+                if (shopMeta != null) {
                     if (shopEffect.isSetPayoutScheduleChanged()) {
                         ScheduleChanged scheduleChanged = shopEffect.getPayoutScheduleChanged();
                         if (scheduleChanged.isSetSchedule()) {

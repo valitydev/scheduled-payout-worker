@@ -55,11 +55,8 @@ public class ShopCreatedHandler implements PartyManagementHandler {
             return;
         }
 
-        if (DamselUtil.hasPaymentInstitutionAccountPayTool(party, shop.getContractId(), shop.getPayoutToolId())) {
-            shopMetaDao.update(partyId, shopId, true);
-            log.info("Shop have been saved, partyId={}, shopId={}", partyId, shopId);
-        }
-
+        shopMetaDao.update(partyId, shopId);
+        log.info("Shop have been saved, partyId={}, shopId={}", partyId, shopId);
     }
 
 }

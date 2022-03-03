@@ -75,32 +75,6 @@ public class DominantServiceImpl implements DominantService {
         }
     }
 
-    @Override
-    public Calendar getCalendar(CalendarRef calendarRef) throws NotFoundException {
-        return getCalendar(calendarRef, Reference.head(new Head()));
-    }
-
-    private Calendar getCalendar(CalendarRef calendarRef, Reference revisionReference) throws NotFoundException {
-        log.info("Trying to get calendar, calendarRef='{}', revisionReference='{}'", calendarRef, revisionReference);
-        try {
-            dev.vality.damsel.domain.Reference reference = new dev.vality.damsel.domain.Reference();
-            reference.setCalendar(calendarRef);
-            VersionedObject versionedObject = checkoutObject(revisionReference, reference);
-            Calendar calendar = versionedObject.getObject().getCalendar().getData();
-            log.info("Calendar has been found, calendarRef='{}', revisionReference='{}', calendar='{}'",
-                    calendarRef, revisionReference, calendar);
-            return calendar;
-        } catch (VersionNotFound | ObjectNotFound ex) {
-            throw new NotFoundException(
-                    String.format("Version not found, calendarRef='%s', revisionReference='%s'",
-                            calendarRef, revisionReference), ex);
-        } catch (TException ex) {
-            throw new RuntimeException(
-                    String.format("Failed to get calendar, calendarRef='%s', revisionReference='%s'",
-                            calendarRef, revisionReference), ex);
-        }
-    }
-
     private VersionedObject checkoutObject(Reference revisionReference, dev.vality.damsel.domain.Reference reference)
             throws TException {
         return retryTemplate.execute(
