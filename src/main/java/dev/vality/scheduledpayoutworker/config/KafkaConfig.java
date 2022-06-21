@@ -63,11 +63,11 @@ public class KafkaConfig {
     private void configureSaslSsl(Map<String, Object> props, KafkaSslProperties kafkaSslProperties,
                                   KafkaSaslProperties kafkaSaslProperties) {
         if (kafkaSslProperties.isEnabled() && kafkaSaslProperties.isEnabled()) {
-            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_SSL);
+            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_SSL.name());
         } else if (kafkaSslProperties.isEnabled()) {
-            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL);
+            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name());
         } else if (kafkaSaslProperties.isEnabled()) {
-            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_PLAINTEXT);
+            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_PLAINTEXT.name());
         }
         configureSsl(props, kafkaSslProperties);
         configureSasl(props, kafkaSaslProperties);
