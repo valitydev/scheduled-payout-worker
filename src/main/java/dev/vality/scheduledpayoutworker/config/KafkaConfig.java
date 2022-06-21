@@ -2,10 +2,12 @@ package dev.vality.scheduledpayoutworker.config;
 
 import dev.vality.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import dev.vality.machinegun.eventsink.SinkEvent;
+import dev.vality.scheduledpayoutworker.config.properties.KafkaSaslProperties;
 import dev.vality.scheduledpayoutworker.config.properties.KafkaSslProperties;
 import dev.vality.scheduledpayoutworker.serde.impl.kafka.SinkEventDeserializer;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -43,7 +45,8 @@ public class KafkaConfig {
     @Value("${kafka.topics.party-management.concurrency}")
     private int partyConcurrency;
 
-    private Map<String, Object> consumerConfigs(KafkaSslProperties kafkaSslProperties) {
+    private Map<String, Object> consumerConfigs(KafkaSslProperties kafkaSslProperties,
+                                                KafkaSaslProperties kafkaSaslProperties) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -53,14 +56,25 @@ public class KafkaConfig {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
 
-        configureSsl(props, kafkaSslProperties);
-
+        configureSaslSsl(props, kafkaSslProperties, kafkaSaslProperties);
         return props;
+    }
+
+    private void configureSaslSsl(Map<String, Object> props, KafkaSslProperties kafkaSslProperties,
+                                  KafkaSaslProperties kafkaSaslProperties) {
+        if (kafkaSslProperties.isEnabled() && kafkaSaslProperties.isEnabled()) {
+            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_SSL);
+        } else if (kafkaSslProperties.isEnabled()) {
+            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL);
+        } else if (kafkaSaslProperties.isEnabled()) {
+            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_PLAINTEXT);
+        }
+        configureSsl(props, kafkaSslProperties);
+        configureSasl(props, kafkaSaslProperties);
     }
 
     private void configureSsl(Map<String, Object> props, KafkaSslProperties kafkaSslProperties) {
         if (kafkaSslProperties.isEnabled()) {
-            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name());
             props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG,
                     new File(kafkaSslProperties.getTrustStoreLocation()).getAbsolutePath());
             props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaSslProperties.getTrustStorePassword());
@@ -73,9 +87,19 @@ public class KafkaConfig {
         }
     }
 
+    private void configureSasl(Map<String, Object> props, KafkaSaslProperties kafkaSaslProperties) {
+        if (kafkaSaslProperties.isEnabled()) {
+            props.put(SaslConfigs.SASL_MECHANISM, kafkaSaslProperties.getMechanism());
+            props.put(SaslConfigs.SASL_JAAS_CONFIG, kafkaSaslProperties.getJaasConfig());
+            props.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS,
+                    kafkaSaslProperties.getClientCallbackHandlerClass());
+        }
+    }
+
     @Bean
-    public ConsumerFactory<String, SinkEvent> pmConsumerFactory(KafkaSslProperties kafkaSslProperties) {
-        Map<String, Object> config = consumerConfigs(kafkaSslProperties);
+    public ConsumerFactory<String, SinkEvent> pmConsumerFactory(KafkaSslProperties kafkaSslProperties,
+                                                                KafkaSaslProperties kafkaSaslProperties) {
+        Map<String, Object> config = consumerConfigs(kafkaSslProperties, kafkaSaslProperties);
         config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId + "-pm");
         return new DefaultKafkaConsumerFactory<>(config);
     }

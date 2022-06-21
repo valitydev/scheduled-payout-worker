@@ -76,6 +76,8 @@ kafka:
       concurrency: 1
   ssl:
     enabled: false
+  sasl:
+    enabled: false
 
 info:
   version: '@project.version@'
