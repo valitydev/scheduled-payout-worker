@@ -42,6 +42,8 @@ public class KafkaConfig {
     private int maxPollRecords;
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
+    @Value("${kafka.security.protocol}")
+    private String securityProtocol;
     @Value("${kafka.topics.party-management.concurrency}")
     private int partyConcurrency;
 
@@ -55,20 +57,13 @@ public class KafkaConfig {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
-
+        props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, securityProtocol);
         configureSaslSsl(props, kafkaSslProperties, kafkaSaslProperties);
         return props;
     }
 
     private void configureSaslSsl(Map<String, Object> props, KafkaSslProperties kafkaSslProperties,
                                   KafkaSaslProperties kafkaSaslProperties) {
-        if (kafkaSslProperties.isEnabled() && kafkaSaslProperties.isEnabled()) {
-            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_SSL.name());
-        } else if (kafkaSslProperties.isEnabled()) {
-            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name());
-        } else if (kafkaSaslProperties.isEnabled()) {
-            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SASL_PLAINTEXT.name());
-        }
         configureSsl(props, kafkaSslProperties);
         configureSasl(props, kafkaSaslProperties);
     }

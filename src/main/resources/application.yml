@@ -58,6 +58,8 @@ service:
     url: http://shumway:8022/accounter
     networkTimeout: 5000
 kafka:
+  security:
+    protocol: PLAINTEXT
   bootstrap-servers: kafka:9092
   client-id: scheduled-payout-worker
   consumer:
