@@ -38,6 +38,27 @@ spring:
   flyway:
     table: schema_version
     schemas: pt
+  kafka:
+    security:
+      protocol: PLAINTEXT
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: scheduled-payout-worker-group-1
+      client-id: scheduled-payout-worker-pm
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      max-poll-records: 20
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: dev.vality.scheduledpayoutworker.serde.impl.kafka.SinkEventDeserializer
+    topics:
+      invoice:
+        id: mg-invoice-100-2
+        enabled: false
+        concurrency: 1
+      party-management:
+        id: mg-events-party
+        enabled: false
+        concurrency: 1
 retry-policy:
   maxAttempts: 10
 service:
@@ -57,29 +78,6 @@ service:
   shumway:
     url: http://shumway:8022/accounter
     networkTimeout: 5000
-kafka:
-  security:
-    protocol: PLAINTEXT
-  bootstrap-servers: kafka:9092
-  client-id: scheduled-payout-worker
-  consumer:
-    group-id: scheduled-payout-worker-group-1
-    enable-auto-commit: false
-    auto-offset-reset: earliest
-    max-poll-records: 20
-  topics:
-    invoice:
-      id: mg-invoice-100-2
-      enabled: false
-      concurrency: 1
-    party-management:
-      id: mg-events-party
-      enabled: false
-      concurrency: 1
-  ssl:
-    enabled: false
-  sasl:
-    enabled: false
 
 info:
   version: '@project.version@'

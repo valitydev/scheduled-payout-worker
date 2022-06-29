@@ -73,7 +73,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Value("${kafka.topics.party-management.id}")
+    @Value("${spring.kafka.topics.party-management.id}")
     private String partyTopic;
 
     @LocalServerPort

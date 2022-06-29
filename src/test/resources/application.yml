@@ -16,6 +16,23 @@ management:
         include: health,info,prometheus
 
 spring:
+  kafka:
+    security:
+      protocol: PLAINTEXT
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    client-id: scheduled-payout-worker
+    consumer:
+      group-id: scheduled-payout-worker-group-1
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      max-poll-records: 20
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: dev.vality.scheduledpayoutworker.serde.impl.kafka.SinkEventDeserializer
+    topics:
+      party-management:
+        id: mg-party
+        enabled: true
+        concurrency: 1
   application:
     name: scheduled-payout-worker
   output:
@@ -49,20 +66,3 @@ service:
   shumway:
     url: http://shumway:8022/accounter
     networkTimeout: 5000
-kafka:
-  security:
-    protocol: PLAINTEXT
-  bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
-  client-id: scheduled-payout-worker
-  consumer:
-    group-id: scheduled-payout-worker-group-1
-    enable-auto-commit: false
-    auto-offset-reset: earliest
-    max-poll-records: 20
-  topics:
-    party-management:
-      id: mg-party
-      enabled: true
-      concurrency: 1
-  ssl:
-    enabled: false

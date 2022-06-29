@@ -21,7 +21,7 @@ public class PartyManagementKafkaListener {
     private final PartyManagementEventService partyManagementService;
     private final ConversionService converter;
 
-    @KafkaListener(topics = "${kafka.topics.party-management.id}", containerFactory = "pmContainerFactory")
+    @KafkaListener(topics = "${spring.kafka.topics.party-management.id}", containerFactory = "pmContainerFactory")
     public void handle(List<ConsumerRecord<String, SinkEvent>> messages, Acknowledgment ack) {
         log.info("Got partyManagement machineEvent batch with size: {}", messages.size());
         for (ConsumerRecord<String, SinkEvent> message : messages) {
