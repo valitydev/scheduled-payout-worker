@@ -4,7 +4,6 @@ import dev.vality.kafka.common.util.ExponentialBackOffDefaultErrorHandlerFactory
 import dev.vality.machinegun.eventsink.SinkEvent;
 import dev.vality.scheduledpayoutworker.serde.impl.kafka.SinkEventDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -36,6 +35,7 @@ public class KafkaConfig {
         Map<String, Object> properties = kafkaProperties.buildConsumerProperties();
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SinkEventDeserializer.class);
+        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, properties.get(ConsumerConfig.CLIENT_ID_CONFIG) + "-pm");
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
