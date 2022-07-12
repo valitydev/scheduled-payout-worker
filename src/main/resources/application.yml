@@ -54,7 +54,7 @@ kafka:
   topics:
     party-management:
       id: mg-events-party
-      enabled: true
+      enabled: false
       concurrency: 1
 service:
   partyManagement:
