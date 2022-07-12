@@ -1,7 +1,9 @@
 package dev.vality.scheduledpayoutworker.service.impl;
 
-import dev.vality.damsel.domain.*;
-import dev.vality.damsel.domain_config.Reference;
+import dev.vality.damsel.domain.BusinessSchedule;
+import dev.vality.damsel.domain.BusinessScheduleRef;
+import dev.vality.damsel.domain.PaymentInstitution;
+import dev.vality.damsel.domain.PaymentInstitutionRef;
 import dev.vality.damsel.domain_config.*;
 import dev.vality.scheduledpayoutworker.exception.NotFoundException;
 import dev.vality.scheduledpayoutworker.service.DominantService;

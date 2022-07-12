@@ -1,6 +1,9 @@
 package dev.vality.scheduledpayoutworker.util;
 
-import dev.vality.damsel.domain.*;
+import dev.vality.damsel.domain.CashFlowAccount;
+import dev.vality.damsel.domain.FinalCashFlowAccount;
+import dev.vality.damsel.domain.FinalCashFlowPosting;
+import dev.vality.damsel.domain.MerchantCashFlowAccount;
 import dev.vality.damsel.payment_processing.ClaimStatus;
 import dev.vality.damsel.payment_processing.PartyChange;
 

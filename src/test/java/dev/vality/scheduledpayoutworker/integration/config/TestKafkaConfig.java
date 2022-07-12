@@ -24,7 +24,7 @@ public class TestKafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 
-    @Value("${spring.kafka.topics.party-management.id}")
+    @Value("${kafka.topics.party-management.id}")
     private String partyTopic;
 
     @Bean

@@ -13,7 +13,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 public class KafkaConsumerBeanEnableConfig {
 
     @Bean
-    @ConditionalOnProperty(value = "spring.kafka.topics.party-management.enabled", havingValue = "true")
+    @ConditionalOnProperty(value = "kafka.topics.party-management.enabled", havingValue = "true")
     public PartyManagementKafkaListener partyManagementKafkaListener(
             PartyManagementEventService partyManagementEventService,
             ConversionService conversionService) {

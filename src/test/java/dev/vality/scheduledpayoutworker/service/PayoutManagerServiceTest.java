@@ -6,7 +6,7 @@ import dev.vality.payout.manager.PayoutManagementSrv;
 import dev.vality.payout.manager.PayoutParams;
 import dev.vality.payout.manager.ShopParams;
 import dev.vality.payouter.domain.tables.pojos.ShopMeta;
-import dev.vality.scheduledpayoutworker.dao.*;
+import dev.vality.scheduledpayoutworker.dao.ShopMetaDao;
 import dev.vality.scheduledpayoutworker.service.impl.PayoutManagerServiceImpl;
 import org.apache.thrift.TException;
 import org.junit.jupiter.api.AfterEach;

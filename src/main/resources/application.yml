@@ -39,28 +39,23 @@ spring:
     table: schema_version
     schemas: pt
   kafka:
+    client-id: scheduled-payout-worker
+    bootstrap-servers: kafka:9092
     security:
       protocol: PLAINTEXT
-    bootstrap-servers: kafka:9092
-    consumer:
-      group-id: scheduled-payout-worker-group-1
-      client-id: scheduled-payout-worker-pm
-      enable-auto-commit: false
-      auto-offset-reset: earliest
-      max-poll-records: 20
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: dev.vality.scheduledpayoutworker.serde.impl.kafka.SinkEventDeserializer
-    topics:
-      invoice:
-        id: mg-invoice-100-2
-        enabled: false
-        concurrency: 1
-      party-management:
-        id: mg-events-party
-        enabled: false
-        concurrency: 1
 retry-policy:
   maxAttempts: 10
+kafka:
+  consumer:
+    group-id: scheduled-payout-worker-group-1
+    enable-auto-commit: false
+    auto-offset-reset: earliest
+    max-poll-records: 20
+  topics:
+    party-management:
+      id: mg-events-party
+      enabled: true
+      concurrency: 1
 service:
   partyManagement:
     url: http://hellgate:8022/v1/processing/partymgmt
