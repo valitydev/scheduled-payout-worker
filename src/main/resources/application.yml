@@ -38,8 +38,24 @@ spring:
   flyway:
     table: schema_version
     schemas: pt
+  kafka:
+    client-id: scheduled-payout-worker
+    bootstrap-servers: kafka:9092
+    security:
+      protocol: PLAINTEXT
 retry-policy:
   maxAttempts: 10
+kafka:
+  consumer:
+    group-id: scheduled-payout-worker-group-1
+    enable-auto-commit: false
+    auto-offset-reset: earliest
+    max-poll-records: 20
+  topics:
+    party-management:
+      id: mg-events-party
+      enabled: false
+      concurrency: 1
 service:
   partyManagement:
     url: http://hellgate:8022/v1/processing/partymgmt
@@ -57,25 +73,6 @@ service:
   shumway:
     url: http://shumway:8022/accounter
     networkTimeout: 5000
-kafka:
-  bootstrap-servers: kafka:9092
-  client-id: scheduled-payout-worker
-  consumer:
-    group-id: scheduled-payout-worker-group-1
-    enable-auto-commit: false
-    auto-offset-reset: earliest
-    max-poll-records: 20
-  topics:
-    invoice:
-      id: mg-invoice-100-2
-      enabled: false
-      concurrency: 1
-    party-management:
-      id: mg-events-party
-      enabled: false
-      concurrency: 1
-  ssl:
-    enabled: false
 
 info:
   version: '@project.version@'

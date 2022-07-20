@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -118,13 +118,12 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
 
         //Create shop via ShopCreatedHandler
 
-        when(partyManagementClient.get(any(), eq(partyId))).thenReturn(party);
+        when(partyManagementClient.get(eq(partyId))).thenReturn(party);
         when(dominantClient.checkoutObject(any(), any())).thenReturn(versionedObject);
 
         producer.send(partyTopic, shopCreatedEvent(partyId, shopId));
 
-        verify(partyManagementClient, timeout(MOCK_TIMEOUT_MILLIS).times(3))
-                .get(any(), eq(partyId));
+        verify(partyManagementClient, timeout(MOCK_TIMEOUT_MILLIS).times(3)).get(eq(partyId));
         verify(dominantClient, timeout(MOCK_TIMEOUT_MILLIS).times(1))
                 .checkoutObject(any(),
                         argThat(reference -> paymentInstitutionId.equals(reference.getPaymentInstitution().getId())));
@@ -176,7 +175,7 @@ class ScheduledPayoutWorkerIntegrationTest extends AbstractKafkaTestContainerCon
         executeJobRequest.setScheduledJobContext(context);
         assertEquals(registerJobRequest.bufferForContext(), client.executeJob(executeJobRequest));
 
-        verify(partyManagementClient, times(4)).get(any(), eq(partyId));
+        verify(partyManagementClient, times(4)).get(eq(partyId));
         verify(shumwayClient, times(1))
                 .getAccountBalance(Long.parseLong(shopId), toTime);
         verify(payoutManagerClient, times(1)).createPayout(payoutParamsCaptor.capture());

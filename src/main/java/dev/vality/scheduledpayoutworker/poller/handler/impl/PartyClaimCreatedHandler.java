@@ -2,8 +2,8 @@ package dev.vality.scheduledpayoutworker.poller.handler.impl;
 
 import dev.vality.damsel.domain.Shop;
 import dev.vality.damsel.payment_processing.*;
-import dev.vality.payouter.domain.tables.pojos.ShopMeta;
 import dev.vality.machinegun.eventsink.MachineEvent;
+import dev.vality.payouter.domain.tables.pojos.ShopMeta;
 import dev.vality.scheduledpayoutworker.dao.ShopMetaDao;
 import dev.vality.scheduledpayoutworker.poller.handler.PartyManagementHandler;
 import dev.vality.scheduledpayoutworker.service.SchedulatorService;

@@ -21,7 +21,7 @@ import java.util.Map;
 @TestConfiguration
 public class TestKafkaConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 
     @Value("${kafka.topics.party-management.id}")

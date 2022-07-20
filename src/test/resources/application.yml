@@ -16,6 +16,9 @@ management:
         include: health,info,prometheus
 
 spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    client-id: scheduled-payout-worker
   application:
     name: scheduled-payout-worker
   output:
@@ -30,6 +33,17 @@ spring:
   flyway:
     table: schema_version
     schemas: pt
+kafka:
+  consumer:
+    group-id: scheduled-payout-worker-group-1
+    enable-auto-commit: false
+    auto-offset-reset: earliest
+    max-poll-records: 20
+  topics:
+    party-management:
+      id: mg-party
+      enabled: true
+      concurrency: 1
 retry-policy:
   maxAttempts: 10
 service:
@@ -49,18 +63,3 @@ service:
   shumway:
     url: http://shumway:8022/accounter
     networkTimeout: 5000
-kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
-  client-id: scheduled-payout-worker
-  consumer:
-    group-id: scheduled-payout-worker-group-1
-    enable-auto-commit: false
-    auto-offset-reset: earliest
-    max-poll-records: 20
-  topics:
-    party-management:
-      id: mg-party
-      enabled: true
-      concurrency: 1
-  ssl:
-    enabled: false

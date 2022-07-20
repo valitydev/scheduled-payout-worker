@@ -20,7 +20,6 @@ import static dev.vality.scheduledpayoutworker.util.TestUtil.fillTBaseObject;
 import static dev.vality.scheduledpayoutworker.util.TestUtil.generateRandomStringId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.*;
 
 class PartyManagementServiceTest {
@@ -51,10 +50,10 @@ class PartyManagementServiceTest {
     void getParty() throws TException {
         String partyId = generateRandomStringId();
         Party party = prepareParty(partyId, null, null);
-        when(partyManagementClient.get(notNull(), eq(partyId))).thenReturn(party);
+        when(partyManagementClient.get(eq(partyId))).thenReturn(party);
         Party actualParty = service.getParty(partyId);
         assertEquals(party, actualParty);
-        verify(partyManagementClient, times(1)).get(notNull(), eq(partyId));
+        verify(partyManagementClient, times(1)).get(eq(partyId));
     }
 
     @Test
@@ -64,10 +63,10 @@ class PartyManagementServiceTest {
         Party party = prepareParty(partyId, shopId, null);
         Shop shop = party.getShops().get(shopId);
 
-        when(partyManagementClient.get(notNull(), eq(partyId))).thenReturn(party);
+        when(partyManagementClient.get(eq(partyId))).thenReturn(party);
         Shop actualShop = service.getShop(partyId, shopId);
         assertEquals(shop, actualShop);
-        verify(partyManagementClient, times(1)).get(notNull(), eq(partyId));
+        verify(partyManagementClient, times(1)).get(eq(partyId));
     }
 
     @Test
@@ -76,10 +75,10 @@ class PartyManagementServiceTest {
         String contractId = generateRandomStringId();
         Party party = prepareParty(partyId, null, contractId);
         PaymentInstitutionRef paymentInstitutionRef = party.getContracts().get(contractId).getPaymentInstitution();
-        when(partyManagementClient.get(notNull(), eq(partyId))).thenReturn(party);
+        when(partyManagementClient.get(eq(partyId))).thenReturn(party);
         PaymentInstitutionRef actualPaymentInstitutionRef = service.getPaymentInstitutionRef(partyId, contractId);
         assertEquals(paymentInstitutionRef, actualPaymentInstitutionRef);
-        verify(partyManagementClient, times(1)).get(notNull(), eq(partyId));
+        verify(partyManagementClient, times(1)).get(eq(partyId));
     }
 
     private Party prepareParty(String partyId, String shopId, String contractId) {

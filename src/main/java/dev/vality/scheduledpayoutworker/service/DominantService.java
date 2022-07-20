@@ -1,6 +1,9 @@
 package dev.vality.scheduledpayoutworker.service;
 
-import dev.vality.damsel.domain.*;
+import dev.vality.damsel.domain.BusinessSchedule;
+import dev.vality.damsel.domain.BusinessScheduleRef;
+import dev.vality.damsel.domain.PaymentInstitution;
+import dev.vality.damsel.domain.PaymentInstitutionRef;
 import dev.vality.scheduledpayoutworker.exception.NotFoundException;
 
 public interface DominantService {
