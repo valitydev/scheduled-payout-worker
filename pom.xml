@@ -6,11 +6,11 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>1.0.18</version>
+        <version>1.0.20</version>
     </parent>
 
     <artifactId>scheduled-payout-worker</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1>
     <packaging>jar</packaging>
 
     <name>scheduled-payout-worker</name>
@@ -30,7 +30,7 @@
         <db.port>5432</db.port>
         <db.name>scheduled_payout_worker</db.name>
         <db.url>jdbc:postgresql://localhost:${db.port}/${db.name}</db.url>
-        <testcontainers.version>1.17.3</testcontainers.version>
+        <testcontainers.version>1.17.3</testcontai1.19.1
     </properties>
 
     <dependencies>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>payout-manager-proto</artifactId>
-            <version>1.36-063163d</version>
+            <version>1.36-063163d</vers1.38-635dc24
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -56,12 +56,12 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
-            <version>1.597-bfedcb9</version>
+            <version>1.597-bfedcb9</ver1.606-f718741
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.40-a411c7d</version>
+            <version>1.40-a4111.41-96f7f11</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.geck</groupId>
@@ -326,7 +326,7 @@
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
                         <artifactId>maven-filtering</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.3.1</version>
                     </dependency>
                 </dependencies>
                 <configuration>
