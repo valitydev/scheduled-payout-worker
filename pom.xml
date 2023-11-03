@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>scheduled-payout-worker</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>scheduled-payout-worker</name>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>payout-manager-proto</artifactId>
-            <version>1.36-063163d</version>
+            <version>1.41-eb4091a</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
