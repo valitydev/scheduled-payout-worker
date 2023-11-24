@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>scheduled-payout-worker</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>scheduled-payout-worker</name>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.40-a411c7d</version>
+            <version>1.42-f32e92d</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.geck</groupId>
