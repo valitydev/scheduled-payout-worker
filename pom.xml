@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>scheduled-payout-worker</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>scheduled-payout-worker</name>
@@ -30,7 +30,7 @@
         <db.port>5432</db.port>
         <db.name>scheduled_payout_worker</db.name>
         <db.url>jdbc:postgresql://localhost:${db.port}/${db.name}</db.url>
-        <testcontainers.version>1.17.3</testcontainers.version>
+        <testcontainers.version>1.19.7</t1.19.7
     </properties>
 
     <dependencies>
